@@ -1,14 +1,21 @@
 
+# Labels
+source.label <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
+
+
 # Plot themes
+
+# # NOTE only need to do this one time -- once you have "Poppins" font on your local device (I'm sure there's a better way to do this!)
+# font_import()
 
 plot.theme.top10 <-
   theme(plot.title = element_text(size = rel(1.2),
                                   colour = "#303030",
                                   face = "bold"),
         plot.subtitle = element_text(size = rel(1),
-                                  colour = "#303030",
-                                  face = "italic"),
-        axis.ticks = element_blank(),
+                                  colour = "#303030"),
+        axis.ticks.x = element_line(colour = "#C0C0C0"),
+        axis.ticks.y = element_blank(),
         panel.background = element_rect(fill = "white",
                                       colour = "#909090"),
         panel.border = element_rect(fill = NA,
@@ -61,6 +68,3 @@ legend.guide.top10 <-
                                keywidth = unit(0.75, "cm"),
                                keyheight = unit(0.5, "cm")))
 
-# Colour schemes
-x <- as.matrix(List.Top10.EU)
-top10.colours <- c("red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "gray", "black")

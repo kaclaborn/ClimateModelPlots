@@ -18,7 +18,8 @@
 
 # ---- 1.1 Import libraries ----
 
-pacman::p_load(rio, tidyr, stringr, grid, gridtext, ggplot2, dplyr)
+pacman::p_load(rio, grid, gridtext, gridExtra, extrafont, ggthemes, ggplot2, 
+               tidyr, stringr, dplyr)
 
 
 # ---- 1.2 Import data ----
@@ -30,6 +31,14 @@ data <- import('data/inputs/PMSSPBIE_05Feb20.csv', header = T)
 
 scenario.choice <- "SSP2BL" # baseline scenarios to filter to
 marker.scenario <- "SSP2BLMESGB" # marker model for scenario.choice
+
+country.labels <- data.frame(country = c("CHN", "USA", "EU27", "IND", "RUS", "JPN", "BRA", "IDN", "IRN", "SAU",
+                                         "CAN", "MEX", "KOR", "AUS", "TUR", "ZAF", "GBR", "THA", "PAK", "NGA",
+                                         "DEU", "FRA"), # list of countries
+                             country.name = c("China", "United States", "EU-27", "India", "Russia", "Japan", 
+                                              "Brazil", "Indonesia", "Iran", "Saudi Arabia", "Canada",
+                                              "Mexico", "South Korea", "Australia", "Turkey", "South Africa", 
+                                              "United Kingdom", "Thailand", "Pakistan", "Nigeria", "Germany", "France")) # the name of the country, to be used in the figures
 
 
 # 
@@ -74,12 +83,14 @@ CurrentEmitters.EU <- CurrentEmitters.EU %>%
 List.Top10.EU <- CurrentEmitters.EU %>%
   filter(country!="EARTH") %>%
   slice_max(`2020`, n = 10) %>%
-  select(country)
+  select(country) %>%
+  left_join(country.labels, by = "country")
 
 List.Top20.EU <- CurrentEmitters.EU %>%
   filter(country!="EARTH") %>%
   slice_max(`2020`, n = 20) %>%
-  select(country)
+  select(country) %>%
+  left_join(country.labels, by = "country")
 
 
 # ---- 2.2 Major current emitters (with EU as separate nation states) ----
@@ -97,12 +108,14 @@ CurrentEmitters.NoGrp <- datafiltered %>%
 List.Top10.NoGrp <- CurrentEmitters.NoGrp %>%
   filter(country!="EARTH") %>%
   slice_max(`2020`, n = 10) %>%
-  select(country)
+  select(country) %>%
+  left_join(country.labels, by = "country")
 
 List.Top20.NoGrp <- CurrentEmitters.NoGrp %>%
   filter(country!="EARTH") %>%
   slice_max(`2020`, n = 20) %>%
-  select(country)
+  select(country) %>%
+  left_join(country.labels, by = "country")
 
 
 # 
@@ -154,25 +167,29 @@ FutureGHG.NoGrp <- FutureGHG %>%
 
 # --- EU as single entity
 GHGTop10.EU <- FutureGHG.EU %>%
-  filter(country %in% as.matrix(List.Top10.EU)) %>%
-  filter(marker==1 & year>=1850 & year<=2050) %>%
-  mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T))
+  filter(country %in% as.matrix(List.Top10.EU) & marker==1) %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T))
 
 GHGTop20.EU <- FutureGHG.EU %>%
-  filter(country %in% as.matrix(List.Top20.EU)) %>%
-  filter(marker==1 & year>=1850 & year<=2050) %>%
-  mutate(country = factor(country, levels = List.Top20.EU$country, ordered = T))
+  filter(country %in% as.matrix(List.Top20.EU) & marker==1) %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top20.EU$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top20.EU$country.name, ordered = T))
 
 # --- EU as independent nation states
 GHGTop10.NoGrp <- FutureGHG.NoGrp %>%
-  filter(country %in% as.matrix(List.Top10.NoGrp)) %>%
-  filter(marker==1 & year>=1850 & year<=2050) %>%
-  mutate(country = factor(country, levels = List.Top10.NoGrp$country, ordered = T))
+  filter(country %in% as.matrix(List.Top10.NoGrp) & marker==1) %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top10.NoGrp$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top10.NoGrp$country.name, ordered = T))
 
 GHGTop20.NoGrp <- FutureGHG.NoGrp %>%
-  filter(country %in% as.matrix(List.Top20.NoGrp)) %>%
-  filter(marker==1 & year>=1850 & year<=2050) %>%
-  mutate(country = factor(country, levels = List.Top20.NoGrp$country, ordered = T))
+  filter(country %in% as.matrix(List.Top20.NoGrp) & marker==1) %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top20.NoGrp$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top20.NoGrp$country.name, ordered = T))
 
 
 # 
@@ -186,8 +203,6 @@ GHGTop20.NoGrp <- FutureGHG.NoGrp %>%
 
 # ---- 4.1 Create country lists for filtering ----
 
-country.labels <- data.frame(list = c("CHN", "USA", "EU27"), # list of countries that data will be filtered to, for country-specific figures
-                             name = c("China", "United States", "European Union")) # the name of the country, to be used in the figures
 
 
 # ---- 4.2 Filter historic and future trajectories data for specific countries ----
