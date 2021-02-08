@@ -1,9 +1,11 @@
 
-# Top 10 Plots
+# code: Top 10 Plots 
 
 source('code/PlotThemes.R')
 
-# TOP 10 EMISSIONS, NOT STACKED
+
+# ---- TOP 10 EMISSIONS, NOT STACKED ----
+
 # Future trajectories only - Top 10 emitters (2020 as reference)
 NonStacked.Top10Emissions.Future.Plot <-
   ggplot(GHGTop10.EU %>% filter(year>=2020 & year<=2050), aes(x = year, y = value/1000000)) +
@@ -26,13 +28,13 @@ NonStacked.Top10Emissions.Future.Arranged <-
                bottom = grid.text(label = source.label, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
 
-# Historical and future trajectories (1850 - 2050) - Top 10 emitters (2020 as reference)
+# Historical and future trajectories (1950 - 2050) - Top 10 emitters (2018 as reference)
 NonStacked.Top10Emissions.Time.Plot <-
   ggplot(GHGTop10.EU %>% filter(year>=1950 & year<=2050), aes(x = year, y = value/1000000)) +
   geom_line(aes(group = country, colour = country.name),
@@ -61,14 +63,15 @@ NonStacked.Top10Emissions.Time.Arranged <-
                bottom = grid.text(label = source.label, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
 
 
-# TOP 10 EMISSIONS, STACKED
+# ---- TOP 10 EMISSIONS, STACKED ----
+
 # Future trajectories only - Top 10 emitters (2020 as reference)
 Stacked.Top10Emissions.Future.Plot <-
   ggplot(GHGTop10.EU %>% filter(year>=2020 & year<=2050), aes(x = year, y = value/1000000)) +
@@ -83,7 +86,7 @@ Stacked.Top10Emissions.Future.Plot <-
                      expand = c(0, 0)) +
   scale_y_continuous(name = "", 
                      expand = c(0, 0),
-                     limits = c(0,50),
+                     limits = c(0, 50),
                      breaks = seq(10, 40, by = 10),
                      labels = c("10 Gt", "20 Gt", "30 Gt", "40 Gt")) +
   plot.theme.top10 + legend.guide.top10 +
@@ -95,13 +98,13 @@ Stacked.Top10Emissions.Future.Arranged <-
                bottom = grid.text(label = source.label, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
 
-# Historical and future trajectories (1850 - 2050) - Top 10 emitters (2020 as reference)
+# Historical and future trajectories (1950 - 2050) - Top 10 emitters (2018 as reference)
 Stacked.Top10Emissions.Time.Plot <-
   ggplot(GHGTop10.EU %>% filter(year>=1950 & year<=2050), aes(x = year, y = value/1000000)) +
   geom_area(aes(group = country, fill = country.name)) +
@@ -121,22 +124,55 @@ Stacked.Top10Emissions.Time.Plot <-
                      breaks = seq(1950, 2050, by = 25)) +
   scale_y_continuous(name = "", 
                      expand = c(0, 0),
-                     limits = c(0,50),
+                     limits = c(0, 50),
                      breaks = seq(10, 40, by = 10),
                      labels = c("10 Gt", "20 Gt", "30 Gt", "40 Gt")) +
   plot.theme.top10 + legend.guide.top10 +
-  labs(title = "Annual GHG emissions trajectories, top 10 current emitters", 
-       subtitle = "Historic and future projected emissions of Kyoto greenhouse gases (AR4) in CO2e,\nSSP2 baseline scenario")
+  labs(title = "Annual GHG Emissions Trajectories: Top 10 Current Emitters", 
+       subtitle = "Historic and future projected emissions (Gt CO2e) of Kyoto greenhouse gases (AR4) for ten countries with highest present-day emissions\nIPCC Shared Socioeconomic Pathway 2 “Middle of the Road” reference case")
 
 Stacked.Top10Emissions.Time.Arranged <- 
   grid.arrange(Stacked.Top10Emissions.Time.Plot, 
                bottom = grid.text(label = source.label, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
+
+
+# # Historical CAIT emissions (1990 - 2016) - Top 10 emitters (2018 as reference)
+# Stacked.Top10Emissions.CAIT.Plot <-
+#   ggplot(GHGTop10.CAIT, aes(x = Year, y = total/1000)) +
+#   geom_area(aes(group = country, fill = country.name)) +
+#   geom_line(aes(group = country),
+#             colour = "#C0C0C0",
+#             size = 0.5,
+#             position = "stack",
+#             show.legend = F) +
+#   scale_fill_ptol() +
+#   scale_x_continuous(name = "",
+#                      expand = c(0, 0)) +
+#   scale_y_continuous(name = "", 
+#                      expand = c(0, 0),
+#                      limits = c(0, 30),
+#                      breaks = seq(5, 30, by = 5),
+#                      labels = c("5 Gt", "10 Gt", "15 Gt", "20 Gt", "25 Gt", "30 Gt")) +
+#   plot.theme.top10 + legend.guide.top10 +
+#   labs(title = "Annual GHG Emissions Trajectories: Top 10 Current Emitters", 
+#        subtitle = "Historic emissions (Gt CO2e) of Kyoto greenhouse gases (AR4) for ten countries with highest present-day emissions")
+# 
+# Stacked.Top10Emissions.CAIT.Arranged <- 
+#   grid.arrange(Stacked.Top10Emissions.CAIT.Plot, 
+#                bottom = grid.text(label = source.label, 
+#                                   x = unit(45, "pt"),
+#                                   just = "left",
+#                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+#                ncol = 1,
+#                padding = unit(5, "pt"), 
+#                vp = viewport(width = 1, height = 0.95))
+
 
 
 # ---- EXPORT ----

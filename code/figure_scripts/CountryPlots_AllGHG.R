@@ -1,5 +1,5 @@
 
-# Country-specific future trajectories (all GHGs)
+# code: Country-specific historical and future trajectories (all GHGs)
 
 
 source('code/PlotThemes.R')
@@ -28,10 +28,10 @@ CHN.GHGEmissions.Future.Plot <-
 
 CHN.GHGEmissions.Future.Arranged <- 
   grid.arrange(CHN.GHGEmissions.Future.Plot, 
-               bottom = grid.text(label = source.label,
+               bottom = grid.text(label = source.label.gutschow.gutschow,
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -62,10 +62,10 @@ CHN.GHGEmissions.Time.Plot <-
 
 CHN.GHGEmissions.Time.Arranged <- 
   grid.arrange(CHN.GHGEmissions.Time.Plot, 
-               bottom = grid.text(label = source.label,
+               bottom = grid.text(label = source.label.gutschow,
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -99,10 +99,10 @@ CHN.GHGEmissions.Wedges.Future.Plot <-
 
 CHN.GHGEmissions.Wedges.Future.Arranged <- 
   grid.arrange(CHN.GHGEmissions.Wedges.Future.Plot, 
-               bottom = grid.text(label = source.label,
+               bottom = grid.text(label = source.label.gutschow,
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -142,10 +142,10 @@ CHN.GHGEmissions.Wedges.Time.Plot <-
 
 CHN.GHGEmissions.Wedges.Time.Arranged <- 
   grid.arrange(CHN.GHGEmissions.Wedges.Time.Plot, 
-               bottom = grid.text(label = source.label,
+               bottom = grid.text(label = source.label.gutschow,
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030")),
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -153,7 +153,7 @@ CHN.GHGEmissions.Wedges.Time.Arranged <-
 # grid.text("Source: Gütschow, J.; Jeffery, L.; Günther, A.; Meinshausen, M. (2020):\n              Country resolved combined emission and socio-economic pathways based on the RCP and SSP scenarios - dataset.\n              Zenodo. <https://doi.org/10.5281/zenodo.3638137>.\nNote: Units in gigagrams (Gg) CO2eq", 
 #           x = unit(25, "pt"), 
 #           just = "left", 
-#           gp = gpar(fontsize = 8, lineheight = 1.2, col = "#303030"))
+#           gp = gpar(fontsize = 8, lineheight = 1, col = "#303030"))
 
 
 # ---- EXPORT ----

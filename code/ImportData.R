@@ -1,4 +1,5 @@
-# ---- code: Import Emissions Trajectories Data ----
+# 
+# code: Import Emissions Trajectories Data
 
 # ---- sections ----
 # 1.  Import data
@@ -24,7 +25,17 @@ pacman::p_load(rio, grid, gridtext, gridExtra, extrafont, ggthemes, ggplot2,
 
 # ---- 1.2 Import data ----
 
-data <- import('data/inputs/PMSSPBIE_05Feb20.csv', header = T)
+gutschow.data <- 
+  import('data/inputs/PMSSPBIE_05Feb20.csv', header = T) # note, all values are in Gg (gigagrams)
+
+GCAM.future.sector.data <- 
+  import('data/inputs/GCAMSectorProjections.xlsx')
+
+CAIT.current.sector.data <- 
+  import('data/inputs/CAIT_GHG_sector.csv') %>% # note, all values are in Mt (megatons)
+  mutate(Code = ifelse(Entity=="European Union (27)", "EU27", Code))
+
+
 
 
 # ---- 1.3 Identify filters for data wrangling ----
@@ -34,17 +45,20 @@ marker.scenario <- "SSP2BLMESGB" # marker model for scenario.choice
 
 country.labels <- data.frame(country = c("CHN", "USA", "EU27", "IND", "RUS", "JPN", "BRA", "IDN", "IRN", "SAU",
                                          "CAN", "MEX", "KOR", "AUS", "TUR", "ZAF", "GBR", "THA", "PAK", "NGA",
-                                         "DEU", "FRA"), # list of countries
+                                         "DEU", "FRA", "MYS", "KAZ", "VNM", "ARG", "EGY", "UKR", "TWN", "VEN", 
+                                         "IRQ", "ARE"), # list of countries
                              country.name = c("China", "United States", "EU-27", "India", "Russia", "Japan", 
                                               "Brazil", "Indonesia", "Iran", "Saudi Arabia", "Canada",
                                               "Mexico", "South Korea", "Australia", "Turkey", "South Africa", 
-                                              "United Kingdom", "Thailand", "Pakistan", "Nigeria", "Germany", "France")) # the name of the country, to be used in the figures
+                                              "United Kingdom", "Thailand", "Pakistan", "Nigeria", "Germany", "France",
+                                              "Malaysia", "Kazakhstan", "Vietnam", "Argentina", "Egypt", "Ukraine",
+                                              "Taiwan", "Venezuela", "Iraq", "United Arab Emirates")) # the name of the country, to be used in the figures
 
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 2: FILTER TO CURRENT EMISSIONS ----
+# ---- SECTION 2: FILTER GUTSCHOW DATA TO CURRENT EMISSIONS ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -56,14 +70,14 @@ country.labels <- data.frame(country = c("CHN", "USA", "EU27", "IND", "RUS", "JP
 
 # ---- 2.1 Select emissions trajectories harmonized with historical data & the chosen scenario ----
 
-datafiltered <- data %>%
+gutschow.filtered <- gutschow.data %>%
   filter(grepl("PMSSPBIE", source) & grepl(scenario.choice, scenario))  # This subsets to all the chosen baseline scenarios for each of the different IAMs (listed under scenario)
 
 
 # ---- 2.2 Major current emitters (with EU including as single entity) ----
 
-CurrentEmitters.EU <- datafiltered %>%
-  select(source, scenario, country, entity, unit, `2020`) %>%
+CurrentEmitters.EU <- gutschow.filtered %>%
+  select(source, scenario, country, entity, unit, `2018`, `2020`) %>%
   filter(grepl("KYOTOGHGAR4", entity)) %>%
   filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country))
 
@@ -73,47 +87,52 @@ CurrentEmitters.EU <- CurrentEmitters.EU %>%
                           LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
                           SWE = "EU27", SVK = "EU27", ESP = "EU27", SVN = "EU27"))%>%
   group_by(source, unit, entity, scenario, country) %>%
-  summarise(`2020` = sum(`2020`)) %>%
+  summarise(`2020` = sum(`2020`),
+            `2018` = sum(`2018`)) %>%
   ungroup %>%
   mutate(marker = ifelse(scenario==marker.scenario, 1, 0)) %>%
-  filter(marker==1) %>%
-  slice_max(`2020`, n = 21)  #N=21 because data includes global total "EARTH" in country column.  Subsetting to Top20. 
+  filter(marker==1) 
+
 
 # Create list of top 10 and top 20 emitters (2020 as reference year; EU considered a single entity)
 List.Top10.EU <- CurrentEmitters.EU %>%
   filter(country!="EARTH") %>%
-  slice_max(`2020`, n = 10) %>%
+  slice_max(`2018`, n = 10) %>%
   select(country) %>%
   left_join(country.labels, by = "country")
 
 List.Top20.EU <- CurrentEmitters.EU %>%
   filter(country!="EARTH") %>%
-  slice_max(`2020`, n = 20) %>%
+  slice_max(`2018`, n = 20) %>%
+  select(country) %>%
+  left_join(country.labels, by = "country")
+
+List.Top30.EU <- CurrentEmitters.EU %>%
+  filter(country!="EARTH") %>%
+  slice_max(`2018`, n = 30) %>%
   select(country) %>%
   left_join(country.labels, by = "country")
 
 
 # ---- 2.2 Major current emitters (with EU as separate nation states) ----
 
-CurrentEmitters.NoGrp <- datafiltered %>%
-  select(source, scenario, country, entity, unit, `2020`) %>%
+CurrentEmitters.NoGrp <- gutschow.filtered %>%
+  select(source, scenario, country, entity, unit, `2018`, `2020`) %>%
   filter(grepl("KYOTOGHGAR4", entity)) %>%
   filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country)) %>%
   mutate(marker = ifelse(scenario==marker.scenario, 1, 0))%>%
-  filter(marker==1) %>%
-  slice_max(`2020`, n = 21) #N=21 because data includes global total "EARTH" in country column.  Subsetting to Top20. 
-
+  filter(marker==1)
 
 # Create list of top 10 and top 20 emitters (2020 as reference year; EU countries as separate nation states)
 List.Top10.NoGrp <- CurrentEmitters.NoGrp %>%
   filter(country!="EARTH") %>%
-  slice_max(`2020`, n = 10) %>%
+  slice_max(`2018`, n = 10) %>%
   select(country) %>%
   left_join(country.labels, by = "country")
 
 List.Top20.NoGrp <- CurrentEmitters.NoGrp %>%
   filter(country!="EARTH") %>%
-  slice_max(`2020`, n = 20) %>%
+  slice_max(`2018`, n = 20) %>%
   select(country) %>%
   left_join(country.labels, by = "country")
 
@@ -121,7 +140,7 @@ List.Top20.NoGrp <- CurrentEmitters.NoGrp %>%
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 3: FILTER FOR FUTURE TRAJECTORIES ----
+# ---- SECTION 3: FILTER GUTSCHOW DATA FOR FUTURE TRAJECTORIES ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -129,7 +148,7 @@ List.Top20.NoGrp <- CurrentEmitters.NoGrp %>%
 
 # ---- 3.1 Reshape emissions data ----
 
-FutureGHG <- datafiltered %>%
+FutureGHG <- gutschow.filtered %>%
   tidyr::pivot_longer(c(`1850`:`2100`), names_to = "year", values_to = "value") %>%
   filter(grepl("KYOTOGHGAR4", entity)) %>%
   filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country)) %>%
@@ -178,6 +197,13 @@ GHGTop20.EU <- FutureGHG.EU %>%
   mutate(country = factor(country, levels = List.Top20.EU$country, ordered = T),
          country.name = factor(country.name, levels = List.Top20.EU$country.name, ordered = T))
 
+GHGTop30.EU <- FutureGHG.EU %>%
+  filter(country %in% as.matrix(List.Top30.EU) & marker==1) %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top30.EU$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top30.EU$country.name, ordered = T))
+
+
 # --- EU as independent nation states
 GHGTop10.NoGrp <- FutureGHG.NoGrp %>%
   filter(country %in% as.matrix(List.Top10.NoGrp) & marker==1) %>%
@@ -195,31 +221,100 @@ GHGTop20.NoGrp <- FutureGHG.NoGrp %>%
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 4: COUNTRY-SPECIFIC EMISSIONS ----
+# ---- SECTION 4: WRANGLE CAIT & GCAM DATA ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+
+# ---- 4.1 Create data frames for historic emissions for Top 10 and Top 20 emitters (CAIT data) ----
+
+GHGTop10.CAIT <- CAIT.current.sector.data %>%
+  filter(Code %in% as.matrix(List.Top10.EU)) %>%
+  rename("country" = "Code",
+         "Agriculture" = "Agriculture (GHG Emissions, CAIT)",
+         "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
+         "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
+         "Waste" = "Waste (GHG Emissions, CAIT)",
+         "Buildings" = "Buildings (GHG Emissions, CAIT)",
+         "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
+  mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
+                               "Manufacturing/Construction energy (GHG Emissions, CAIT)",
+                               "Transport (GHG Emissions, CAIT)",
+                               "Other Fuel Combustion (GHG Emissions, CAIT)",
+                               "Fugitive from energy production (GHG Emissions, CAIT)")],
+                          na.rm = T),
+         net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
+                                  "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
+         gross.total.minusLUCF = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
+                                    "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
+         gross.total.minusLUCF = ifelse(`Land-Use Change and Forestry`<0, 
+                                        gross.total.minusLUCF + abs(`Land-Use Change and Forestry`),
+                                        gross.total.minusLUCF)) %>%
+  pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
+               names_to = "sector") %>%
+  left_join(country.labels, by = "country") %>%
+  mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T),
+         sector = factor(sector, 
+                         levels = c("Energy", "Industrial Processes", "Land-Use Change and Forestry", "Agriculture", "Waste", "Buildings", "International Bunkers"),
+                         ordered = T),
+         negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, 1, 0))
+
+
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 5: COUNTRY-SPECIFIC EMISSIONS ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
 
-# ---- 4.1 Create country lists for filtering ----
+# # ---- 5.1 Filter historic and future trajectories data (Gütschow) for specific countries ----
+# 
+# for(i in List.Top10.EU$country) {
+#   filename <- paste("GHG.", i, sep = "")
+#   
+#   assign(filename,
+#          FutureGHG %>%
+#            mutate(country = recode(country, AUT = "EU27", BEL = "EU27", BGR = "EU27", HRV = "EU27", CYP = "EU27", CZE = "EU27", DNK = "EU27", 
+#                                    EST = "EU27", FIN = "EU27", FRA = "EU27", DEU = "EU27", GRC = "EU27", HUN = "EU27", IRL = "EU27", ITA = "EU27", 
+#                                    LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
+#                                    SWE = "EU27", SVK = "EU27", ESP = "EU27", SVN = "EU27")) %>%
+#            group_by(source, unit, entity, scenario, country, year) %>%
+#            summarise(value = sum(value)) %>%
+#            ungroup %>%
+#            mutate(marker = ifelse(scenario==marker.scenario, "1" , "0")) %>%
+#            filter(country==i  & year>=1850 & year<=2050))
+# }
 
 
+# # ---- 4.2 Filter historical sector-specific data (CAIT) for specific countries ----
+# 
+# for(i in List.Top10.EU$country) {
+#   filename <- paste("CAIT.", i, sep = "")
+#   
+#   assign(filename, 
+#          GHGTop10.CAIT %>%
+#            filter(country==i) %>%
+#            rename("Agriculture" = "Agriculture (GHG Emissions, CAIT)",
+#                   "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
+#                   "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
+#                   "Waste" = "Waste (GHG Emissions, CAIT)",
+#                   "Buildings" = "Buildings (GHG Emissions, CAIT)",
+#                   "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
+#            mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
+#                                         "Manufacturing/Construction energy (GHG Emissions, CAIT)",
+#                                         "Transport (GHG Emissions, CAIT)",
+#                                         "Other Fuel Combustion (GHG Emissions, CAIT)",
+#                                         "Fugitive from energy production (GHG Emissions, CAIT)")],
+#                                    na.rm = T)) %>%
+#            pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
+#                         names_to = "sector") %>%
+#            mutate(negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, 1, 0),
+#                   sector = factor(sector, 
+#                                   levels = c("Energy", "Industrial Processes", "Land-Use Change and Forestry", "Agriculture", "Waste", "Buildings", "International Bunkers"),
+#                                   ordered = T)))
+# }
 
-# ---- 4.2 Filter historic and future trajectories data for specific countries ----
-
-for(i in List.Top10.EU$country) {
-  filename <- paste("GHG.", i, sep = "")
-  
-  assign(filename,
-         FutureGHG %>%
-           mutate(country = recode(country, AUT = "EU27", BEL = "EU27", BGR = "EU27", HRV = "EU27", CYP = "EU27", CZE = "EU27", DNK = "EU27", 
-                                   EST = "EU27", FIN = "EU27", FRA = "EU27", DEU = "EU27", GRC = "EU27", HUN = "EU27", IRL = "EU27", ITA = "EU27", 
-                                   LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
-                                   SWE = "EU27", SVK = "EU27", ESP = "EU27", SVN = "EU27")) %>%
-           group_by(source, unit, entity, scenario, country, year) %>%
-           summarise(value = sum(value)) %>%
-           ungroup %>%
-           mutate(marker = ifelse(scenario==marker.scenario, "1" , "0")) %>%
-           filter(country==i  & year>=1850 & year<=2050))
-}
 
