@@ -1,7 +1,8 @@
 
 # Labels
-source.label <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
-
+source.label.gutschow <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
+source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e; dashed line represents net emissions after accounting for carbon sink"
+source.label.gcam <- "Source: GCAM\nNote: Units in gigatonnes (Gt); dashed line represents net emissions after accounting for carbon sink"
 
 # Plot themes
 
@@ -61,7 +62,7 @@ plot.theme.top30 <-
                                   face = "bold",
                                   colour = "#303030"),
         axis.text.x = element_text(size = rel(0.9),
-                                 angle = 300,
+                                 angle = 330,
                                  colour = "#303030",
                                  lineheight = 0.7,
                                  hjust = 0),

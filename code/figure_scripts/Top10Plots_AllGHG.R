@@ -25,7 +25,7 @@ NonStacked.Top10Emissions.Future.Plot <-
 
 NonStacked.Top10Emissions.Future.Arranged <- 
   grid.arrange(NonStacked.Top10Emissions.Future.Plot, 
-               bottom = grid.text(label = source.label, 
+               bottom = grid.text(label = source.label.gutschow, 
                                   x = unit(45, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
@@ -60,7 +60,7 @@ NonStacked.Top10Emissions.Time.Plot <-
 
 NonStacked.Top10Emissions.Time.Arranged <- 
   grid.arrange(NonStacked.Top10Emissions.Time.Plot, 
-               bottom = grid.text(label = source.label, 
+               bottom = grid.text(label = source.label.gutschow, 
                                   x = unit(45, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
@@ -95,7 +95,7 @@ Stacked.Top10Emissions.Future.Plot <-
 
 Stacked.Top10Emissions.Future.Arranged <- 
   grid.arrange(Stacked.Top10Emissions.Future.Plot, 
-               bottom = grid.text(label = source.label, 
+               bottom = grid.text(label = source.label.gutschow, 
                                   x = unit(45, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
@@ -133,7 +133,7 @@ Stacked.Top10Emissions.Time.Plot <-
 
 Stacked.Top10Emissions.Time.Arranged <- 
   grid.arrange(Stacked.Top10Emissions.Time.Plot, 
-               bottom = grid.text(label = source.label, 
+               bottom = grid.text(label = source.label.gutschow, 
                                   x = unit(45, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
@@ -165,7 +165,7 @@ Stacked.Top10Emissions.Time.Arranged <-
 # 
 # Stacked.Top10Emissions.CAIT.Arranged <- 
 #   grid.arrange(Stacked.Top10Emissions.CAIT.Plot, 
-#                bottom = grid.text(label = source.label, 
+#                bottom = grid.text(label = source.label.gutschow, 
 #                                   x = unit(45, "pt"),
 #                                   just = "left",
 #                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),

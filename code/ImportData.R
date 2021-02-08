@@ -52,7 +52,7 @@ country.labels <- data.frame(country = c("CHN", "USA", "EU27", "IND", "RUS", "JP
                                               "Mexico", "South Korea", "Australia", "Turkey", "South Africa", 
                                               "United Kingdom", "Thailand", "Pakistan", "Nigeria", "Germany", "France",
                                               "Malaysia", "Kazakhstan", "Vietnam", "Argentina", "Egypt", "Ukraine",
-                                              "Taiwan", "Venezuela", "Iraq", "United Arab Emirates")) # the name of the country, to be used in the figures
+                                              "Taiwan", "Venezuela", "Iraq", "UAE")) # the name of the country, to be used in the figures
 
 
 # 
@@ -242,12 +242,12 @@ GHGTop10.CAIT <- CAIT.current.sector.data %>%
                                "Transport (GHG Emissions, CAIT)",
                                "Other Fuel Combustion (GHG Emissions, CAIT)",
                                "Fugitive from energy production (GHG Emissions, CAIT)")],
-                          na.rm = T),
-         net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
+                          na.rm = T)) %>%
+  mutate(net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
                                   "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
          gross.total.minusLUCF = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-                                    "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
-         gross.total.minusLUCF = ifelse(`Land-Use Change and Forestry`<0, 
+                                              "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
+         gross.total = ifelse(`Land-Use Change and Forestry`<0, 
                                         gross.total.minusLUCF + abs(`Land-Use Change and Forestry`),
                                         gross.total.minusLUCF)) %>%
   pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
@@ -259,6 +259,41 @@ GHGTop10.CAIT <- CAIT.current.sector.data %>%
                          levels = c("Energy", "Industrial Processes", "Land-Use Change and Forestry", "Agriculture", "Waste", "Buildings", "International Bunkers"),
                          ordered = T),
          negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, 1, 0))
+
+
+# ---- 4.2 Create data frame for summarized GCAM future projected emissions totals ----
+
+GCAM.totals <-
+  GCAM.future.sector.data %>%
+  group_by(Country, Scenario, Year) %>%
+  summarise(gross.total = ifelse(Value[Indicator=="Land Use and Forestry"]>=0, sum(Value[Indicator!="Fossil Fuel Consumption"]), #if the net land use and forestry emissions are negative, then do not add them to gross total
+                                 sum(Value[Indicator!="Fossil Fuel Consumption" & Indicator!="Land Use and Forestry"])),
+            fossil.fuel.consump = Value[Indicator=="Fossil Fuel Consumption"],
+            LUF = Value[Indicator=="Land Use and Forestry"],
+            carbon.sink = ifelse(Value[Indicator=="Land Use and Forestry"]>=0,
+                                 gross.total-Value[Indicator=="Fossil Fuel Consumption"],
+                                 (Value[Indicator=="Fossil Fuel Consumption"]-gross.total)+
+                                   abs(Value[Indicator=="Land Use and Forestry"])), # land use and forestry may still be producing a sink, even if they net positive emissions, 
+                                                                                    # so we must calculate the difference between gross total and fossil fuel consumption if land use and forestry is positive,
+                                                                                    # and add the absolute value of the negative land use and forestry value to the difference between fossil fuel consumption and the gross total
+            net.total = gross.total - carbon.sink)
+# NOTE: we end up with some negative carbon sinks, after the above calculations.. not entirely sure what that could indicate?  
+
+
+# ---- 4.3 Bind GCAM totals data frame (with calculated gross/net totals) with full GCAM data frame ----
+
+GHGTop10.GCAM <-
+  GCAM.future.sector.data %>% 
+  filter(Indicator!="Fossil Fuel Consumption") %>%
+  left_join(GCAM.totals, by = c("Country", "Scenario", "Year")) %>%
+  rename("country.name" = "Country",
+         "scenario" = "Scenario",
+         "value" = "Value",
+         "sector" = "Indicator") %>%
+  mutate(sector = factor(sector, 
+                         levels = c("Transportation", "Industry", "Electricity", "Land Use and Forestry", "Buildings"),
+                         ordered = T))
+
 
 
 # 
