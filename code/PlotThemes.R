@@ -103,6 +103,37 @@ plot.theme.top30 <-
         legend.box.spacing = unit(0.1, "cm"))
 
 
+plot.theme.sector <-
+  theme(plot.title = element_text(size = rel(1),
+                                  colour = "#303030",
+                                  face = "bold"),
+        plot.subtitle = element_text(size = rel(0.75),
+                                     colour = "#303030"),
+        axis.ticks.x = element_line(colour = "#C0C0C0"),
+        axis.ticks.y = element_blank(),
+        panel.background = element_rect(fill = "white",
+                                        colour = "#909090"),
+        panel.border = element_rect(fill = NA,
+                                    size = 0.25,
+                                    colour = "#C0C0C0"),
+        panel.grid.major.y = element_line(colour = "#C0C0C0",
+                                          size = 0.35,
+                                          linetype = 3),
+        panel.grid.major.x = element_blank(),
+        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
+        axis.title = element_text(size = rel(0.9),
+                                  angle = 0,
+                                  face = "bold",
+                                  colour = "#303030"),
+        axis.text = element_text(size = rel(0.9),
+                                 angle = 0,
+                                 colour = "#303030",
+                                 lineheight = 0.7),
+        legend.position = "right",
+        legend.box.spacing = unit(0.1, "cm"))
+
+
+
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #

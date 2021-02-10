@@ -28,6 +28,18 @@ eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 sector.plot.list <- c("China", "United States", "EU-27","India") 
 
 
+# ---- 1.3 Define dummy plot with legend with proper categories ---
+sector.7categories.legend <-
+  ggplot(GHGTop10.CAIT %>% filter(country.name=="China"), 
+         aes(x = Year, y = value/1000)) +
+  geom_area(aes(group = sector, fill = sector),
+            position = "stack") +
+  scale_fill_ptol(drop = F) +
+  legend.guide.top10
+
+sector.7categories.legend <- get_legend(sector.7categories.legend)
+
+
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -45,8 +57,7 @@ China.Emissions.BySector.Historical.Plot <-
   geom_line(aes(group = sector),
             colour = "#C0C0C0",
             size = 0.5,
-            position = "stack",
-            show.legend = F) +
+            position = "stack") +
   geom_line(data = GHGTop10.CAIT %>% filter(country.name=="China" & sector=="Energy"), # this is an arbitrary selection of sector -- just filtering to only have 1 row per year
             aes(x = Year, y = net.total/1000),
             linetype = 2,
@@ -73,6 +84,56 @@ China.Emissions.BySector.Historical.Arranged <-
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
+
+
+
+# OPTION 2 of historical emissions by sector (CHINA)
+China.Emissions.BySector.Historical.Plot <-
+  ggplot(GHGTop10.CAIT %>% filter(country.name=="China"), aes(x = Year, y = value/1000)) +
+  geom_area(aes(group = sector, fill = sector),
+            position = "stack",
+            show.legend = F) +
+  geom_line(aes(group = sector),
+            colour = "#C0C0C0",
+            size = 0.5,
+            position = "stack",
+            show.legend = F) +
+  geom_hline(aes(yintercept = 0),
+             linetype = 1,
+             size = 0.75,
+             colour = "#505050") +
+  annotate("text", x = 2016.5, y = 2, label = toupper("gross emissions"), 
+           size = 2.5, colour = "#909090", angle = 270) +
+  annotate("segment", x = 2016, xend = 2017, y = 0, yend = 0,
+           linetype = 1,
+           size = 0.75,
+           colour = "#505050") +
+  coord_cartesian(xlim = c(1990, 2016), clip = "off") +
+  scale_fill_ptol(drop = F) +
+  scale_x_continuous(name = "",
+                     expand = c(0, 0)) +
+  scale_y_continuous(name = "",
+                     expand = c(0, 0),
+                     limits = c(-2.5, 15),
+                     breaks = seq(-2, 12, by = 2),
+                     labels = c("-2 Gt", "0 Gt","2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
+  plot.theme.sector + legend.guide.top10 +
+  labs(title = "Annual GHG Emissions: China",
+       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change (1990 - 2016)")
+
+China.Emissions.BySector.Historical.Arranged <- 
+  grid.arrange(China.Emissions.BySector.Historical.Plot, 
+               sector.7categories.legend,
+               bottom = grid.text(label = source.label.cait, 
+                                  x = unit(45, "pt"),
+                                  just = "left",
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+               ncol = 2,
+               padding = unit(5, "pt"), 
+               vp = viewport(width = 1, height = 0.95),
+               widths = c(10,4))
+
+
 
 
 # ---- 2.2 UNITED STATES ----
