@@ -267,7 +267,7 @@ GHGTop10.CAIT <- CAIT.current.sector.data %>%
          sector = factor(sector, 
                          levels = c("Energy", "Industrial Processes", "Land-Use Change and Forestry", "Agriculture", "Waste", "Buildings", "International Bunkers"),
                          ordered = T),
-         negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, 1, 0))
+         negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, "1", "0"))
 
 
 # ---- 4.2 Create data frame for summarized GCAM future projected emissions totals ----

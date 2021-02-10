@@ -16,10 +16,12 @@
 #
 
 
-source('code/PlotThemes.R')
+# ---- 1.1 Source PlotThemes.R ----
+
+eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 
 
-# ---- 1.1 Create data frame that identifies proportion of global GHGs for top 10 countries, grouped ----
+# ---- 1.2 Create data frame that identifies proportion of global GHGs for top 10 countries, grouped ----
 
 Grouped.GHG.Proportions <- 
   GHGTop30.EU %>%
@@ -59,11 +61,11 @@ Top30Emissions.Bar.Plot <-
                 y = c(14.7, (15*0.43)-0.3, (15*0.17)-0.3), 
                 label = grouped.GHGprop),
             size = 2.25,
-            colour = "#505050",
+            colour = "#606060",
             fontface = "bold") +
-  annotate("text", x = 4.5, y = 15.5, label = toupper("Share of global emissions"), 
+  annotate("text", x = 4.5, y = 15.4, label = toupper("Share of global emissions"), 
            size = 2.4,
-           colour = "#606060") +
+           colour = "#909090") +
   geom_bar(data = GHGTop30.EU %>% filter(year==2018),
            aes(x = country.name, y = value/1000000),
            fill = "#56ACAD",

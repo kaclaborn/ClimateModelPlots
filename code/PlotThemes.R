@@ -25,10 +25,9 @@ source.label.gcam <- "Source: GCAM\nNote: Units in gigatonnes (Gt); dashed line 
 # ---- 1.2 Create a new output figure folder with today's date ----
 
 # --- Define figure output directory
-dir.create(paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = "_"))
+dir.create(paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = ""))
 
-FigureFileName <- paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = "_")
-
+FigureFileName <- paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = "")
 
 
 # 
@@ -112,6 +111,9 @@ plot.theme.top30 <-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
+
+# ---- 3.1 Legend guide for Top 10 (and currently, all) plots ----
+
 legend.guide.top10 <-
   guides(fill = guide_legend(title.hjust = 1,
                              title.theme = element_blank(),
@@ -140,3 +142,12 @@ legend.guide.top10 <-
                                keywidth = unit(0.75, "cm"),
                                keyheight = unit(0.5, "cm")))
 
+
+# ---- 3.2 Define function to retrieve legend from plot ----
+
+get_legend <- function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}

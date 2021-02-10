@@ -17,10 +17,12 @@
 #
 
 
-source('code/PlotThemes.R')
+# ---- 1.1 Source PlotThemes.R ----
+
+eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 
 
-# ---- 1.1 Identify which countries (of Top 10) to produce sector-specific plots for ----
+# ---- 1.2 Identify which countries (of Top 10) to produce sector-specific plots for ----
 
 # this is only necessary if we automate the plotting process by country (see experiment at bottom of script)
 sector.plot.list <- c("China", "United States", "EU-27","India") 
