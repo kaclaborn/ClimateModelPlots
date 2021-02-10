@@ -1,13 +1,43 @@
+# 
+# code: Define plot themes, labels, legend guides, export folder
+# 
+# ---- sections ----
+# 1.  Manual Labels & Other Configurations
+# 2.  Plot Themes
+# 3.  Legend Guides
 
-# Labels
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 1: Manual Labels & Other Configurations ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+
+
+# ---- 1.1 Labels to be used for bottom of figures (source, notes) -----
+
 source.label.gutschow <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
 source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e; dashed line represents net emissions after accounting for carbon sink"
 source.label.gcam <- "Source: GCAM\nNote: Units in gigatonnes (Gt); dashed line represents net emissions after accounting for carbon sink"
 
-# Plot themes
 
-# # NOTE only need to do this one time -- once you have "Poppins" font on your local device (I'm sure there's a better way to do this!)
-# font_import()
+# ---- 1.2 Create a new output figure folder with today's date ----
+
+# --- Define figure output directory
+dir.create(paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = "_"))
+
+FigureFileName <- paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"), sep = "_")
+
+
+
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 2: Plot Themes ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 
 plot.theme.top10 <-
   theme(plot.title = element_text(size = rel(1),
@@ -74,8 +104,13 @@ plot.theme.top30 <-
         legend.box.spacing = unit(0.1, "cm"))
 
 
-
-# Legend guides
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 3: Legend Guides ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 
 legend.guide.top10 <-
   guides(fill = guide_legend(title.hjust = 1,

@@ -1,6 +1,6 @@
 # 
 # code: Import Emissions Trajectories Data
-
+# 
 # ---- sections ----
 # 1.  Import data
 # 2.  Examine Top20 current emitters
@@ -79,9 +79,7 @@ gutschow.filtered <- gutschow.data %>%
 CurrentEmitters.EU <- gutschow.filtered %>%
   select(source, scenario, country, entity, unit, `2018`, `2020`) %>%
   filter(grepl("KYOTOGHGAR4", entity)) %>%
-  filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country))
-
-CurrentEmitters.EU <- CurrentEmitters.EU %>%
+  filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country)) %>%
   mutate(country = recode(country, AUT = "EU27", BEL = "EU27", BGR = "EU27", HRV = "EU27", CYP = "EU27", CZE = "EU27", DNK = "EU27", 
                           EST = "EU27", FIN = "EU27", FRA = "EU27", DEU = "EU27", GRC = "EU27", HUN = "EU27", IRL = "EU27", ITA = "EU27",
                           LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
@@ -154,9 +152,18 @@ FutureGHG <- gutschow.filtered %>%
   filter(!grepl("ANNEXI|NONANNEXI|AOSIS|BASIC|LDC|UMBRELLA|EU28", country)) %>%
   mutate(marker = ifelse(scenario==marker.scenario, 1, 0),
          year = as.numeric(year))  
-
+  
 #KC:  SSPM2BLMESGB is the marker scenario for SSP2 (meaning this is the trend line we will use as the average)
 #FutureGHG should contain all of the baseline scenarios for SSP2.  We can talk about whether we create a shaded error "wedge" behind the marker scenario,  or whether we show all SSP2 baseline scenarios with the non-marker scenarios as paler lines.
+
+# --- Create filtered data frame with only global emissions 
+
+GlobalGHG <- FutureGHG %>%
+  filter(country=="EARTH") %>%
+  mutate(marker = ifelse(scenario==marker.scenario, 1 , 0)) %>%
+  rename("totalGHG" = "value") %>%
+  filter(marker==1)
+
 
 
 # ---- 3.2 Extract emissions trajectories for all countries (with EU as single entity) ----
@@ -200,7 +207,9 @@ GHGTop20.EU <- FutureGHG.EU %>%
 GHGTop30.EU <- FutureGHG.EU %>%
   filter(country %in% as.matrix(List.Top30.EU) & marker==1) %>%
   left_join(country.labels, by = "country") %>%
-  mutate(country = factor(country, levels = List.Top30.EU$country, ordered = T),
+  left_join(GlobalGHG[,c("year","totalGHG")], by = "year") %>%
+  mutate(propGHG = value / totalGHG,
+         country = factor(country, levels = List.Top30.EU$country, ordered = T),
          country.name = factor(country.name, levels = List.Top30.EU$country.name, ordered = T))
 
 

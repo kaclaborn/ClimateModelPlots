@@ -1,52 +1,40 @@
-
+# 
 # code: Country-specific future emissions trajectories, by sector
+# 
+# ---- sections ----
+# 1.  Source Plot Themes, Wrangle Data
+# 2.  Historical Sector-Specific Emissions Plots
+# 3.  Projections of Sector-Specific Emissions Plots
+# 4.  Export
 
 
-# ---- Identify which countries (of Top 10) to produce sector-specific plots for ----
-
-sector.plot.list <- c("China", "United States", "EU-27","India")
-
-
-# ---- Produce historical sector specific emissions plots, by country ----
-
-# for(i in sector.plot.list) {
-#   
-#   filename <- paste(List.Top10.EU$country[List.Top10.EU$country.name==i], "Emissions.BySector.Historical.Plot", sep = ".")
-#   
-#   max.val <- max(GHGTop10.CAIT %>% filter(GHGTop10.CAIT$country.name==i & sector=="Energy") %>% # this is an arbitrary selection of sector -- just filtering to only have 1 row per year
-#                    select(gross.total))
-#   
-#   # Would need to figure out how to automate the y axis labels and breaks to fully automate these plots
-#   
-#   assign(filename,
-#          ggplot(GHGTop10.CAIT %>% filter(country.name==i & negativeLUCF==0), aes(x = Year, y = value/1000)) +
-#            geom_area(aes(group = sector, fill = sector),
-#                      position = "stack") +
-#            geom_line(aes(group = sector),
-#                      colour = "#C0C0C0",
-#                      size = 0.5,
-#                      position = "stack",
-#                      show.legend = F) +
-#            geom_line(data = GHGTop10.CAIT %>% filter(country.name==i & sector=="Energy"), # this is an arbitrary selection of sector -- just filtering to only have 1 row per year
-#                      aes(x = Year, y = net.total/1000),
-#                      linetype = 2,
-#                      size = 1,
-#                      colour = "#C0C0C0") +
-#            scale_fill_ptol(drop = F) +
-#            scale_x_continuous(name = "",
-#                               expand = c(0, 0)) +
-#            scale_y_continuous(name = "", 
-#                               expand = c(0, 0),
-#                               limits = c(0, max.val/1000 + 3),
-#                               labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt")) +
-#            plot.theme.top10 + legend.guide.top10 +
-#            labs(title = paste("Annual GHG Emissions:", i, sep = " "), 
-#                 subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change (1990 - 2016)"))
-#   
-# }
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 1: Source Plot Themes, Wrangle Data ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 
 
-# -- CHINA
+source('code/PlotThemes.R')
+
+
+# ---- 1.1 Identify which countries (of Top 10) to produce sector-specific plots for ----
+
+# this is only necessary if we automate the plotting process by country (see experiment at bottom of script)
+sector.plot.list <- c("China", "United States", "EU-27","India") 
+
+
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 2: Historical Sector-Specific Emissions Plots ---
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+
+# ---- 2.1 CHINA ----
 
 China.Emissions.BySector.Historical.Plot <-
   ggplot(GHGTop10.CAIT %>% filter(country.name=="China" & negativeLUCF==0), aes(x = Year, y = value/1000)) +
@@ -85,7 +73,7 @@ China.Emissions.BySector.Historical.Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
-# -- UNITED STATES
+# ---- 2.2 UNITED STATES ----
 
 USA.Emissions.BySector.Historical.Plot <-
   ggplot(GHGTop10.CAIT %>% filter(country.name=="United States" & negativeLUCF==0), aes(x = Year, y = value/1000)) +
@@ -124,11 +112,16 @@ USA.Emissions.BySector.Historical.Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 3: Projections of Sector-Specific Emissions Plots ---
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 
-# ---- Produce projections of sector specific emissions plots, by country ----
 
-
-# -- CHINA
+# ---- 3.1 CHINA ----
 
 China.Emissions.BySector.Future.Plot <-
   ggplot(GHGTop10.GCAM %>% filter(country.name=="China" & scenario=="Low policy (2015)"), aes(x = Year, y = value/1000)) +
@@ -167,7 +160,7 @@ China.Emissions.BySector.Future.Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
-# -- India
+# ---- 3.2 INDIA ----
 
 India.Emissions.BySector.Future.Plot <-
   ggplot(GHGTop10.GCAM %>% filter(country.name=="India" & scenario=="Low policy (2015)"), aes(x = Year, y = value/1000)) +
@@ -206,35 +199,79 @@ India.Emissions.BySector.Future.Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
-# ---- EXPORT ----
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 4: Export ---
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 
 
-# CHINA - historical emissions by sector
-png('figures/China.historical.bysector.png',
+# ---- CHINA - historical emissions by sector ----
+png(paste(FigureFileName, "/China.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(China.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# CHINA - future projected emissions by sector
-png('figures/China.future.bysector.png',
+# ---- CHINA - future projected emissions by sector ----
+png(paste(FigureFileName, "/China.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(China.Emissions.BySector.Future.Arranged)
 dev.off()
 
 
-# USA - historical emissions by sector
-png('figures/USA.historical.bysector.png',
+# ---- USA - historical emissions by sector ----
+png(paste(FigureFileName, "/USA.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(USA.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# INDIA - future projected emissions by sector
-png('figures/India.future.bysector.png',
+# ---- INDIA - future projected emissions by sector ----
+png(paste(FigureFileName, "/India.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(India.Emissions.BySector.Future.Arranged)
 dev.off()
 
+
+
+# EXPERIMENT WITH AUTOMATING PLOTTING PROCESS (WOULD REQUIRE SOME WORK IN CREATING ADAPTIVE Y AXIS SIZE AND LABELS)
+# for(i in sector.plot.list) {
+#   
+#   filename <- paste(List.Top10.EU$country[List.Top10.EU$country.name==i], "Emissions.BySector.Historical.Plot", sep = ".")
+#   
+#   max.val <- max(GHGTop10.CAIT %>% filter(GHGTop10.CAIT$country.name==i & sector=="Energy") %>% # this is an arbitrary selection of sector -- just filtering to only have 1 row per year
+#                    select(gross.total))
+#   
+#   # Would need to figure out how to automate the y axis labels and breaks to fully automate these plots
+#   
+#   assign(filename,
+#          ggplot(GHGTop10.CAIT %>% filter(country.name==i & negativeLUCF==0), aes(x = Year, y = value/1000)) +
+#            geom_area(aes(group = sector, fill = sector),
+#                      position = "stack") +
+#            geom_line(aes(group = sector),
+#                      colour = "#C0C0C0",
+#                      size = 0.5,
+#                      position = "stack",
+#                      show.legend = F) +
+#            geom_line(data = GHGTop10.CAIT %>% filter(country.name==i & sector=="Energy"), # this is an arbitrary selection of sector -- just filtering to only have 1 row per year
+#                      aes(x = Year, y = net.total/1000),
+#                      linetype = 2,
+#                      size = 1,
+#                      colour = "#C0C0C0") +
+#            scale_fill_ptol(drop = F) +
+#            scale_x_continuous(name = "",
+#                               expand = c(0, 0)) +
+#            scale_y_continuous(name = "", 
+#                               expand = c(0, 0),
+#                               limits = c(0, max.val/1000 + 3),
+#                               labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt")) +
+#            plot.theme.top10 + legend.guide.top10 +
+#            labs(title = paste("Annual GHG Emissions:", i, sep = " "), 
+#                 subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change (1990 - 2016)"))
+#   
+# }
