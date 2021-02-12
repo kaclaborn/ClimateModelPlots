@@ -18,8 +18,8 @@
 # ---- 1.1 Labels to be used for bottom of figures (source, notes) -----
 
 source.label.gutschow <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
-source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e; dashed line represents net emissions after accounting for carbon sink"
-source.label.gcam <- "Source: GCAM\nNote: Units in gigatonnes (Gt); dashed line represents net emissions after accounting for carbon sink"
+source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e"
+source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions"
 
 
 # ---- 1.2 Create a new output figure folder with today's date ----
@@ -132,6 +132,7 @@ plot.theme.sector <-
         legend.position = "right",
         legend.box.spacing = unit(0.1, "cm"))
 
+colours.6categories <- c("#332288", "#88CCEE", "#44AA99", "#117733", "#DDCC77", "#CC6677")
 
 
 # 

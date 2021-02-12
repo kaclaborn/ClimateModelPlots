@@ -36,11 +36,11 @@ eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 Stacked.Top10Emissions.Time.Plot <-
   ggplot(GHGTop10.EU %>% filter(year>=1950 & year<=2050), aes(x = year, y = value/1000000)) +
   geom_area(aes(group = country, fill = country.name)) +
-  geom_line(aes(group = country),
-            colour = "#C0C0C0",
-            size = 0.5,
-            position = "stack",
-            show.legend = F) +
+  # geom_line(aes(group = country),
+  #           colour = "#C0C0C0",
+  #           size = 0.5,
+  #           position = "stack",
+  #           show.legend = F) +
   geom_vline(aes(xintercept = 2018),
              size = 0.5,
              colour = "#909090",
@@ -49,7 +49,8 @@ Stacked.Top10Emissions.Time.Plot <-
   scale_fill_ptol() +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
-                     breaks = seq(1950, 2050, by = 25)) +
+                     breaks = seq(1950, 2050, by = 10),
+                     labels = c("1950", "", "1970", "", "1990", "", "2010", "", "2030", "", "2050")) +
   scale_y_continuous(name = "", 
                      expand = c(0, 0),
                      limits = c(0, 50),
@@ -128,7 +129,8 @@ NonStacked.Top10Emissions.Time.Plot <-
   scale_fill_ptol() +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
-                     breaks = seq(1950, 2050, by = 25)) +
+                     breaks = seq(1950, 2050, by = 10),
+                     labels = c("1950", "", "1970", "", "1990", "", "2010", "", "2030", "", "2050")) +
   scale_y_continuous(name = "", 
                      expand = c(0, 0),
                      limits = c(0, 21),
