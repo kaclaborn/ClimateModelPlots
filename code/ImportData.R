@@ -20,7 +20,7 @@
 # ---- 1.1 Import libraries ----
 
 pacman::p_load(rio, grid, gridtext, gridExtra, extrafont, ggthemes, ggplot2, 
-               tidyr, stringr, dplyr)
+               treemapify, tidyr, stringr, dplyr)
 
 
 # ---- 1.2 Import data ----
@@ -54,6 +54,10 @@ country.labels <- data.frame(country = c("CHN", "USA", "EU27", "IND", "RUS", "JP
                                               "Malaysia", "Kazakhstan", "Vietnam", "Argentina", "Egypt", "Ukraine",
                                               "Taiwan", "Venezuela", "Iraq", "UAE")) # the name of the country, to be used in the figures
 
+EU27.list <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", 
+               "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA",
+               "LTU", "LUX", "LVA", "MLT", "NLD", "POL", "PRT", "ROU",
+               "SWE", "SVK", "ESP", "SVN")
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

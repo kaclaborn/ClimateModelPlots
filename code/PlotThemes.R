@@ -21,6 +21,7 @@ source.label.gutschow <- "Source: Gütschow et al (2020). <https://doi.org/10.52
 source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e"
 source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions"
 
+source.label.caittreemap <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions"
 
 # ---- 1.2 Create a new output figure folder with today's date ----
 
@@ -133,6 +134,7 @@ plot.theme.sector <-
         legend.box.spacing = unit(0.1, "cm"))
 
 colours.6categories <- c("#332288", "#88CCEE", "#44AA99", "#117733", "#DDCC77", "#CC6677")
+colours.5categories <- c("#332288", "#88CCEE", "#117733", "#DDCC77", "#CC6677")
 
 
 # 
