@@ -23,6 +23,7 @@ source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GC
 
 source.label.caittreemap <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions"
 
+
 # ---- 1.2 Create a new output figure folder with today's date ----
 
 # --- Define figure output directory
@@ -130,6 +131,27 @@ plot.theme.sector <-
                                  angle = 0,
                                  colour = "#303030",
                                  lineheight = 0.7),
+        legend.position = "right",
+        legend.box.spacing = unit(0.1, "cm"))
+
+
+plot.theme.donut <-
+  theme(plot.title = element_text(size = rel(1),
+                                  colour = "#303030",
+                                  face = "bold"),
+        plot.subtitle = element_text(size = rel(0.75),
+                                     colour = "#303030"),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "white",
+                                        colour = "#909090"),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
+        axis.title = element_text(size = rel(0.9),
+                                  angle = 0,
+                                  face = "bold",
+                                  colour = "#303030"),
+        axis.text = element_blank(),
         legend.position = "right",
         legend.box.spacing = unit(0.1, "cm"))
 

@@ -1,7 +1,8 @@
 
-# Treemap & donut chart of current emissions by sector (globally)
-
-# ---- CAIT data for treemap ----
+# code: Treemap & donut chart of current emissions by sector (globally)
+# 
+# 
+# ---- Wrangle CAIT data for treemap ----
 
 CAIT.ForTreemap <- CAIT.current.sector.data %>%
   filter(Entity!="World" & Year==2016 & !Code%in%EU27.list) %>%
@@ -71,7 +72,8 @@ CAIT.ForTreemap <- CAIT.current.sector.data %>%
          sector.value = paste(sector, paste(round(percent.val * 100, 1), "%", sep = ""), sep = ": "),
          ymin = c(0, head(cumulative.val, n=-1)))
 
-# treemap using treemapify package (which piggybacks on ggplot)
+# ---- Define treemap using treemapify package (which piggybacks on ggplot) ----
+
 Treemap.CurrentEmissions.BySector <-
   CAIT.ForTreemap %>% 
   ggplot(aes(area = value, fill = country.sector, label = sector.value,
@@ -104,7 +106,9 @@ Treemap.CurrentEmissions.BySector.Arranged <-
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
-# EXPORT TREEMAP
+
+# ---- EXPORT TREEMAP ---- 
+
 png("figures/outputs/test.treemap.png",
     units = "in", height = 9, width = 9, res = 400)
 grid.newpage()
@@ -113,27 +117,7 @@ dev.off()
 
 
 
-# test donut chart using ggplot
-
-plot.theme.donut <-
-  theme(plot.title = element_text(size = rel(1),
-                                  colour = "#303030",
-                                  face = "bold"),
-        plot.subtitle = element_text(size = rel(0.75),
-                                     colour = "#303030"),
-        axis.ticks = element_blank(),
-        panel.background = element_rect(fill = "white",
-                                        colour = "#909090"),
-        panel.border = element_blank(),
-        panel.grid = element_blank()
-        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
-        axis.title = element_text(size = rel(0.9),
-                                  angle = 0,
-                                  face = "bold",
-                                  colour = "#303030"),
-        axis.text = element_blank(),
-        legend.position = "right",
-        legend.box.spacing = unit(0.1, "cm"))
+# ---- Test donut chart using ggplot ----
 
 Donut.CurrentEmissions.BySector <-
   ggplot() +
@@ -174,7 +158,8 @@ Donut.CurrentEmissions.BySector <-
 
 
 # ---- DONUT PLOT EXPORT ----
-png("test.png",
+
+png("figures/output/test.donut.png",
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()
 grid.draw(Donut.CurrentEmissions.BySector)
