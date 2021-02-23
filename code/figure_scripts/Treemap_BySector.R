@@ -8,37 +8,30 @@ CAIT.ForTreemap <- CAIT.current.sector.data %>%
   filter(Entity!="World" & Year==2016 & !Code%in%EU27.list) %>%
   rename("country" = "Code",
          "country.name" = "Entity",
-         "Agriculture" = "Agriculture (GHG Emissions, CAIT)",
-         "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
-         "Industry" = "Industry (GHG Emissions, CAIT)", 
-         "Waste" = "Waste (GHG Emissions, CAIT)",
-         "Buildings" = "Buildings (GHG Emissions, CAIT)",
-         "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
-  mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
-                               "Manufacturing/Construction energy (GHG Emissions, CAIT)",
-                               "Transport (GHG Emissions, CAIT)",
-                               "Other Fuel Combustion (GHG Emissions, CAIT)",
-                               "Fugitive from energy production (GHG Emissions, CAIT)")],
-                          na.rm = T),
-         AFOLU = rowSums(.[,c("Agriculture",
-                              "Land-Use Change and Forestry")],
+         "Power & Heat" = "Electricity & Heat (GHG Emissions, CAIT)",
+         "Transport" = "Transport (GHG Emissions, CAIT)") %>%
+  mutate(Industry = rowSums(.[,c("Industry (GHG Emissions, CAIT)", 
+                                 "Manufacturing/Construction energy (GHG Emissions, CAIT)")],
+                            na.rm = T),
+         AFOLU = rowSums(.[,c("Agriculture (GHG Emissions, CAIT)",
+                              "Land-Use Change and Forestry (GHG Emissions, CAIT)")],
                          na.rm = T),
-         Other = rowSums(.[,c("Buildings",
-                              "Waste",
-                              "International Bunkers")],
+         Other = rowSums(.[,c("Buildings (GHG Emissions, CAIT)",
+                              "Waste (GHG Emissions, CAIT)",
+                              "Bunker Fuels (GHG Emissions, CAIT)",
+                              "Other Fuel Combustion (GHG Emissions, CAIT)",
+                              "Fugitive from energy production (GHG Emissions, CAIT)")],
                          na.rm = T),
          country.group = ifelse(country.name=="China", 1, 
                                 ifelse(country.name=="United States", 2,
                                        ifelse(country.name=="European Union (27)", 3,
                                               ifelse(country.name=="India", 4, 5))))) %>%
-  pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-                 "Land-Use Change and Forestry", "Industry", "Energy",
-                 "AFOLU", "Other"), # Energy, Industry, AFOLU, and Other are currently mutually exclusive and exhaustive.
+  select(country, country.name, country.group, Year, `Power & Heat`, Industry, Transport, AFOLU, Other) %>%
+  pivot_longer(c("Industry", "Power & Heat", "Transport", "AFOLU", "Other"), 
                names_to = "sector") %>%
   group_by(country.group, Year, sector) %>%
   summarise(value = sum(value, na.rm = T)) %>%
   ungroup() %>%
-  filter(sector%in%c("Energy", "Industry", "AFOLU", "Other")) %>%
   mutate(country = ifelse(country.group==1, "China", 
                           ifelse(country.group==2, "United States", 
                                  ifelse(country.group==3, "EU-27",
@@ -49,24 +42,24 @@ CAIT.ForTreemap <- CAIT.current.sector.data %>%
                         ifelse(value>=0 & !is.na(value), value, 
                                NA)),
          country.sector = paste(country, sector, sep = "."),
-         sector = factor(sector, levels = c("Energy", "Industry", "AFOLU", "Other"), ordered = T)) %>%
+         sector = factor(sector, levels = c("Power & Heat", "Industry", "Transport", "AFOLU", "Other"), ordered = T)) %>%
   .[order(.$country, .$sector),] %>%
-  mutate(country.sector = factor(country.sector, levels = c("China.Energy", "China.Industry", "China.AFOLU", "China.Other",
-                                                            "United States.Energy", "United States.Industry", "United States.AFOLU", "United States.Other",
-                                                            "EU-27.Energy", "EU-27.Industry", "EU-27.AFOLU", "EU-27.Other",
-                                                            "India.Energy", "India.Industry", "India.AFOLU", "India.Other",
-                                                            "Rest of World.Energy", "Rest of World.Industry", "Rest of World.AFOLU", "Rest of World.Other"),
+  mutate(country.sector = factor(country.sector, levels = c("China.Power & Heat", "China.Industry", "China.Transport", "China.AFOLU", "China.Other",
+                                                            "United States.Power & Heat", "United States.Industry", "United States.Transport", "United States.AFOLU", "United States.Other",
+                                                            "EU-27.Power & Heat", "EU-27.Industry", "EU-27.Transport", "EU-27.AFOLU", "EU-27.Other",
+                                                            "India.Power & Heat", "India.Industry", "India.Transport", "India.AFOLU", "India.Other",
+                                                            "Rest of World.Power & Heat", "Rest of World.Industry", "Rest of World.Transport", "Rest of World.AFOLU", "Rest of World.Other"),
                                  ordered = T),
-         fill.cols = c("#332288", "#5B4E9F", "#847AB7", "#ADA6CF",
-                       "#88CCEE", "#9FD6F1", "#B7E0F4", "#DBEFF9",
-                       "#117733", "#40925B", "#70AD84", "#9FC8AD",
-                       "#DDCC77", "#E3D692", "#EEE5BB", "#F4EFD6",
-                       "#CC6677", "#D68492", "#E0A3AD", "#EAC1C8"),
-         text.cols = c("white", "white", "white", "#707070",
-                       "white", "#909090", "#909090", "#909090",
-                       "white", "white", "white", "#909090",
-                       "white", "#909090", "#909090", "#909090",
-                       "white", "white", "white", "#909090"),
+         fill.cols = c("#332288", "#6053a2", "#8d84bc", "#a49cca", "#d1cde4",
+                       "#5bb9e8", "#88ccee", "#a2d7f1", "#bce2f5", "#d7eef9", 
+                       "#117733", "#459560", "#7ab38d", "#95c2a4", "#cae0d1",
+                       "#d3bd4e", "#ddcc77", "#e4d795", "#ece2b3", "#f3eed1",
+                       "#cc6677", "#d78895", "#e2aab3", "#e8bbc2", "#f3dde0"),
+         text.cols = c("white", "white", "white", "white", "#909090",
+                       "white", "white", "#909090", "#909090", "#909090",
+                       "white", "white", "white", "#909090", "#909090",
+                       "white", "white", "#909090", "#909090", "#909090",
+                       "white", "white", "white", "white", "#909090"),
          percent.val = value / sum(value),
          cumulative.val = cumsum(percent.val),
          sector.value = paste(sector, paste(round(percent.val * 100, 1), "%", sep = ""), sep = ": "),
@@ -89,8 +82,10 @@ Treemap.CurrentEmissions.BySector <-
                     place = "topleft", reflow = T, grow = F, min.size = 2,
                     padding.x = unit(2, "mm"), padding.y = unit(2, "mm"),
                     show.legend = F) +
-  geom_treemap_subgroup_text(size = 18, layout = "srow", colour = "white", fontface = "bold",
-                             place = "center", grow = F, show.legend = F) +
+  geom_treemap_subgroup_text(size = 20, layout = "srow", colour = "white", fontface = "bold",
+                             place = "bottomleft", grow = F, 
+                             padding.x = unit(3, "mm"), padding.y = unit(4, "mm"),
+                             show.legend = F) +
   scale_fill_manual(values = CAIT.ForTreemap$fill.cols) +
   scale_colour_manual(values = CAIT.ForTreemap$text.cols) +
   labs(title = " Global Share of GHG Emissions",
@@ -109,7 +104,7 @@ Treemap.CurrentEmissions.BySector.Arranged <-
 
 # ---- EXPORT TREEMAP ---- 
 
-png("figures/outputs/test.treemap.png",
+png("figures/outputs/test.treemap.2.png",
     units = "in", height = 9, width = 9, res = 400)
 grid.newpage()
 grid.draw(Treemap.CurrentEmissions.BySector.Arranged)

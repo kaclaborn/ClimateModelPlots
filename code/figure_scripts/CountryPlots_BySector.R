@@ -95,6 +95,39 @@ China.Emissions.BySector.Historical.Arranged <-
                widths = c(10, 4))
 
 
+# CHINA emissions plot with same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
+
+China.Emissions.5Sector.Historical.Plot <-
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="China"), aes(x = Year, y = value/1000)) +
+  geom_area(aes(group = sector, fill = sector),
+            position = "stack") +
+  # geom_line(aes(group = sector),
+  #           colour = "#C0C0C0",
+  #           size = 0.5,
+  #           position = "stack",
+  #           show.legend = F) +
+  scale_fill_manual(values = colours.5categories) +
+  scale_x_continuous(name = "",
+                     expand = c(0, 0)) +
+  scale_y_continuous(name = "",
+                     expand = c(0, 0),
+                     limits = c(0, 13),
+                     breaks = seq(2, 12, by = 2),
+                     labels = c("2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
+  plot.theme.sector + legend.guide.top10 +
+  labs(title = "Annual Sectoral Emissions for China (1990 - 2016)",
+       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
+
+China.Emissions.5Sector.Historical.Arranged <- 
+  grid.arrange(China.Emissions.5Sector.Historical.Plot, 
+               bottom = grid.text(label = source.label.cait, 
+                                  x = unit(45, "pt"),
+                                  just = "left",
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+               ncol = 1,
+               padding = unit(5, "pt"), 
+               vp = viewport(width = 1, height = 0.95))
+
 
 
 # ---- 2.2 UNITED STATES ----
@@ -401,7 +434,6 @@ India.Emissions.BySector.Future.Arranged <-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-
 # ---- CHINA - historical emissions by sector ----
 png(paste(FigureFileName, "/China.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 9, res = 400)
@@ -416,6 +448,12 @@ grid.newpage()
 grid.draw(China.Emissions.BySector.Future.Arranged)
 dev.off()
 
+# ---- CHINA - hisorical emissions, 5 sectors (harmonized with treemap) ----
+png(paste(FigureFileName, "/China.historical.5sectors.png", sep = ""),
+    units = "in", height = 6, width = 9.2, res = 400)
+grid.newpage()
+grid.draw(China.Emissions.5Sector.Historical.Arranged)
+dev.off()
 
 # ---- USA - historical emissions by sector ----
 png(paste(FigureFileName, "/USA.historical.bysector.png", sep = ""),
