@@ -25,7 +25,7 @@ eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 # ---- 1.2 Identify which countries (of Top 10) to produce sector-specific plots for ----
 
 # this is only necessary if we automate the plotting process by country (see experiment at bottom of script)
-sector.plot.list <- c("China", "United States", "EU-27","India") 
+sector.plot.list <- c("China", "United States", "EU-27", "India") 
 
 
 # ---- 1.3 Define dummy plot with legend with proper categories ---
@@ -98,7 +98,9 @@ China.Emissions.BySector.Historical.Arranged <-
 # CHINA emissions plot with same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
 
 China.Emissions.5Sector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="China"), aes(x = Year, y = value/1000)) +
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="China") %>%
+           mutate(sector = recode(sector, Industry = "Industry (Energy & Process Emissions)")),
+                  aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
   # geom_line(aes(group = sector),
@@ -111,17 +113,44 @@ China.Emissions.5Sector.Historical.Plot <-
                      expand = c(0, 0)) +
   scale_y_continuous(name = "",
                      expand = c(0, 0),
-                     limits = c(0, 13),
-                     breaks = seq(2, 12, by = 2),
-                     labels = c("2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
-  plot.theme.sector + legend.guide.top10 +
-  labs(title = "Annual Sectoral Emissions for China (1990 - 2016)",
-       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
+                     limits = c(0, 18),
+                     breaks = seq(3, 15, by = 3),
+                     labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt", "15 Gt")) +
+  legend.guide.top10 +
+  labs(title = "Annual Sectoral Emissions for China (1990 - 2017)",
+       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n") +
+  theme(plot.title = element_text(size = rel(1),
+                                  colour = "#303030",
+                                  face = "bold"),
+        plot.subtitle = element_text(size = rel(0.75),
+                                     colour = "#303030"),
+        axis.ticks.x = element_line(colour = "#C0C0C0"),
+        axis.ticks.y = element_blank(),
+        panel.background = element_rect(fill = "white",
+                                        colour = "#909090"),
+        panel.border = element_rect(fill = NA,
+                                    size = 0.25,
+                                    colour = "#C0C0C0"),
+        panel.grid.major.y = element_line(colour = "#C0C0C0",
+                                          size = 0.35,
+                                          linetype = 3),
+        panel.grid.major.x = element_blank(),
+        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
+        axis.title = element_text(size = rel(0.9),
+                                  angle = 0,
+                                  face = "bold",
+                                  colour = "#303030"),
+        axis.text = element_text(size = rel(0.9),
+                                 angle = 0,
+                                 colour = "#303030",
+                                 lineheight = 0.7),
+        legend.position = "left",
+        legend.box.spacing = unit(0.1, "cm"))
 
 China.Emissions.5Sector.Historical.Arranged <- 
   grid.arrange(China.Emissions.5Sector.Historical.Plot, 
                bottom = grid.text(label = source.label.cait, 
-                                  x = unit(45, "pt"),
+                                  x = unit(255, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                ncol = 1,
@@ -280,11 +309,15 @@ India.Emissions.BySector.Historical.Arranged <-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-
+x <- GHGTop10.GCAM %>% filter(country.name=="China") %>%
+  group_by(Year) %>%
+  summarise(total = sum(value, na.rm = T))
 # ---- 3.1 CHINA ----
 
 China.Emissions.BySector.Future.Plot <-
-  ggplot(GHGTop10.GCAM %>% filter(country.name=="China"), aes(x = Year, y = value/1000)) +
+  ggplot(GHGTop10.GCAM %>% filter(country.name=="China") %>%
+           mutate(sector = recode(sector, Industry = "Industry (Energy & Process Emissions)")), 
+         aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
   # geom_line(aes(group = sector),
@@ -292,7 +325,7 @@ China.Emissions.BySector.Future.Plot <-
   #           size = 0.5,
   #           position = "stack",
   #           show.legend = F) +
-  scale_fill_manual(values = colours.6categories) +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
                      breaks = seq(2020, 2100, by = 10),
@@ -308,7 +341,7 @@ China.Emissions.BySector.Future.Plot <-
 
 China.Emissions.BySector.Future.Arranged <- 
   grid.arrange(China.Emissions.BySector.Future.Plot, 
-               bottom = grid.text(label = source.label.gcam, 
+               bottom = grid.text(label = source.label.gcam1, 
                                   x = unit(45, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
@@ -448,8 +481,8 @@ grid.newpage()
 grid.draw(China.Emissions.BySector.Future.Arranged)
 dev.off()
 
-# ---- CHINA - hisorical emissions, 5 sectors (harmonized with treemap) ----
-png(paste(FigureFileName, "/China.historical.5sectors.png", sep = ""),
+# ---- CHINA - historical emissions, 5 sectors (harmonized with treemap) ----
+png(paste(FigureFileName, "/China.historical.5sectors2.png", sep = ""),
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()
 grid.draw(China.Emissions.5Sector.Historical.Arranged)

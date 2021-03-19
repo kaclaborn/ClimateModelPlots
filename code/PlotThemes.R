@@ -22,6 +22,14 @@ source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <htt
 source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions"
 
 source.label.caittreemap <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions"
+source.label.gcamtreemap <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Sector-specific percentages reflect global share of all GHG emissions; scenario includes impacts of COVID-19 on GDP and emissions"
+
+
+source.label.caittreemap1 <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions; 'Industry' category comprised of industrial energy and process emissions"
+source.label.cait1 <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e; 'Industry' category comprised of industrial energy and process emissions"
+
+source.label.gcam1 <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions; 'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
+source.label.gcamtreemap1 <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Sector-specific percentages reflect global share of all GHG emissions; scenario includes impacts of COVID-19 on GDP and emissions;\n          'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
 
 
 # ---- 1.2 Create a new output figure folder with today's date ----
@@ -135,7 +143,7 @@ plot.theme.sector <-
         legend.box.spacing = unit(0.1, "cm"))
 
 
-plot.theme.donut <-
+plot.theme.treemap <-
   theme(plot.title = element_text(size = rel(1),
                                   colour = "#303030",
                                   face = "bold"),

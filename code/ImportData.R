@@ -4,7 +4,7 @@
 # ---- sections ----
 # 1.  Import data
 # 2.  Examine Top20 current emitters
-# 3.  Extract Future Emissions trajectories for Top 10 current emitters.
+# 3.  Extract Future Emissions trajectories for Top 10 current emitters
 # 4.  Export data
 
 
@@ -29,12 +29,16 @@ gutschow.data <-
   import('data/inputs/PMSSPBIE_05Feb20.csv', header = T) # note, all values are in Gg (gigagrams)
 
 GCAM.future.sector.data <- 
-  import('data/inputs/GCAMSectorProjections.xlsx')
+  import('data/inputs/GCAM_emissions_data_20210224x.xlsx') %>%
+  rename("EmissionsSectorLabel" = "EmisisonsSectorLabel")
+
+# CAIT.current.sector.data <- 
+#   import('data/inputs/CAIT_GHG_sector.csv') %>% # note, all values are in Mt (megatons)
+#   mutate(Code = ifelse(Entity=="European Union (27)", "EU27", Code))
 
 CAIT.current.sector.data <- 
-  import('data/inputs/CAIT_GHG_sector.csv') %>% # note, all values are in Mt (megatons)
-  mutate(Code = ifelse(Entity=="European Union (27)", "EU27", Code))
-
+  import('data/inputs/CAIT_historical_emissions_20210225.csv', header = T) %>%
+  mutate(country.name = ifelse(Country=="European Union (27)", "EU-27", Country))
 
 
 
@@ -157,8 +161,6 @@ FutureGHG <- gutschow.filtered %>%
   mutate(marker = ifelse(scenario==marker.scenario, 1, 0),
          year = as.numeric(year))  
   
-#KC:  SSPM2BLMESGB is the marker scenario for SSP2 (meaning this is the trend line we will use as the average)
-#FutureGHG should contain all of the baseline scenarios for SSP2.  We can talk about whether we create a shaded error "wedge" behind the marker scenario,  or whether we show all SSP2 baseline scenarios with the non-marker scenarios as paler lines.
 
 # --- Create filtered data frame with only global emissions 
 
@@ -197,19 +199,19 @@ FutureGHG.NoGrp <- FutureGHG %>%
 
 # --- EU as single entity
 GHGTop10.EU <- FutureGHG.EU %>%
-  filter(country %in% as.matrix(List.Top10.EU) & marker==1) %>%
+  filter(country %in% as.matrix(List.Top10.EU)) %>%
   left_join(country.labels, by = "country") %>%
   mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T),
          country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T))
 
 GHGTop20.EU <- FutureGHG.EU %>%
-  filter(country %in% as.matrix(List.Top20.EU) & marker==1) %>%
+  filter(country %in% as.matrix(List.Top20.EU)) %>%
   left_join(country.labels, by = "country") %>%
   mutate(country = factor(country, levels = List.Top20.EU$country, ordered = T),
          country.name = factor(country.name, levels = List.Top20.EU$country.name, ordered = T))
 
 GHGTop30.EU <- FutureGHG.EU %>%
-  filter(country %in% as.matrix(List.Top30.EU) & marker==1) %>%
+  filter(country %in% as.matrix(List.Top30.EU)) %>%
   left_join(country.labels, by = "country") %>%
   left_join(GlobalGHG[,c("year","totalGHG")], by = "year") %>%
   mutate(propGHG = value / totalGHG,
@@ -219,16 +221,36 @@ GHGTop30.EU <- FutureGHG.EU %>%
 
 # --- EU as independent nation states
 GHGTop10.NoGrp <- FutureGHG.NoGrp %>%
-  filter(country %in% as.matrix(List.Top10.NoGrp) & marker==1) %>%
+  filter(country %in% as.matrix(List.Top10.NoGrp)) %>%
   left_join(country.labels, by = "country") %>%
   mutate(country = factor(country, levels = List.Top10.NoGrp$country, ordered = T),
          country.name = factor(country.name, levels = List.Top10.NoGrp$country.name, ordered = T))
 
 GHGTop20.NoGrp <- FutureGHG.NoGrp %>%
-  filter(country %in% as.matrix(List.Top20.NoGrp) & marker==1) %>%
+  filter(country %in% as.matrix(List.Top20.NoGrp)) %>%
   left_join(country.labels, by = "country") %>%
   mutate(country = factor(country, levels = List.Top20.NoGrp$country, ordered = T),
          country.name = factor(country.name, levels = List.Top20.NoGrp$country.name, ordered = T))
+
+
+# --- EU as single entity, all baseline scenarios included (not only marker scenario -- to display uncertainty)
+GHGTop30.MultiScenarios.EU <- 
+  FutureGHG %>%
+  mutate(country = recode(country, AUT = "EU27", BEL = "EU27", BGR = "EU27", HRV = "EU27", CYP = "EU27", CZE = "EU27", DNK = "EU27", 
+                          EST = "EU27", FIN = "EU27", FRA = "EU27", DEU = "EU27", GRC = "EU27", HUN = "EU27", IRL = "EU27", ITA = "EU27", 
+                          LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
+                          SWE = "EU27", SVK = "EU27", ESP = "EU27", SVN = "EU27")) %>%
+  group_by(source, unit, entity, scenario, country, year) %>%
+  summarise(value = sum(value)) %>%
+  ungroup %>%
+  mutate(marker = ifelse(scenario==marker.scenario, "1" , "0")) %>%
+  filter(country %in% as.matrix(List.Top30.EU)) %>%
+  left_join(country.labels, by = "country") %>%
+  left_join(GlobalGHG[,c("year","totalGHG")], by = "year") %>%
+  mutate(propGHG = value / totalGHG,
+         country = factor(country, levels = List.Top30.EU$country, ordered = T),
+         country.name = factor(country.name, levels = List.Top30.EU$country.name, ordered = T))
+
 
 
 # 
@@ -241,135 +263,84 @@ GHGTop20.NoGrp <- FutureGHG.NoGrp %>%
 
 # ---- 4.1 Create data frames for historic emissions for Top 10 and Top 20 emitters (CAIT data) ----
 
-GHGTop10.CAIT <- CAIT.current.sector.data %>%
-  filter(Code %in% as.matrix(List.Top10.EU)) %>%
-  rename("country" = "Code",
-         "Agriculture" = "Agriculture (GHG Emissions, CAIT)",
-         "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
-         "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
-         "Waste" = "Waste (GHG Emissions, CAIT)",
-         "Buildings" = "Buildings (GHG Emissions, CAIT)",
-         "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
-  mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
-                               "Manufacturing/Construction energy (GHG Emissions, CAIT)",
-                               "Transport (GHG Emissions, CAIT)",
-                               "Other Fuel Combustion (GHG Emissions, CAIT)",
-                               "Fugitive from energy production (GHG Emissions, CAIT)")],
-                          na.rm = T)) %>%
-  mutate(net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-                                  "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
-         gross.total.minusLUCF = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-                                              "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
-         gross.total = ifelse(`Land-Use Change and Forestry`<0, 
-                              gross.total.minusLUCF + abs(`Land-Use Change and Forestry`),
-                              gross.total.minusLUCF)) %>%
-  pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
-               names_to = "sector") %>%
-  left_join(country.labels, by = "country") %>%
-  mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T),
-         country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T),
-         sector = factor(sector, 
-                         levels = c("Energy", "Industrial Processes", "Agriculture", "Waste", "Buildings", "International Bunkers", "Land-Use Change and Forestry"),
-                         ordered = T),
-         negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, "1", "0"))
+# GHGTop10.CAIT <- CAIT.current.sector.data %>%
+#   filter(Country %in% as.matrix(List.Top10.EU)) %>%
+#   rename("country" = "Country",
+#          "Agriculture" = "Agriculture (GHG Emissions, CAIT)",
+#          "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
+#          "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
+#          "Waste" = "Waste (GHG Emissions, CAIT)",
+#          "Buildings" = "Buildings (GHG Emissions, CAIT)",
+#          "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
+#   mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
+#                                "Manufacturing/Construction energy (GHG Emissions, CAIT)",
+#                                "Transport (GHG Emissions, CAIT)",
+#                                "Other Fuel Combustion (GHG Emissions, CAIT)",
+#                                "Fugitive from energy production (GHG Emissions, CAIT)")],
+#                           na.rm = T)) %>%
+#   mutate(net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
+#                                   "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
+#          gross.total.minusLUCF = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
+#                                               "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
+#          gross.total = ifelse(`Land-Use Change and Forestry`<0, 
+#                               gross.total.minusLUCF + abs(`Land-Use Change and Forestry`),
+#                               gross.total.minusLUCF)) %>%
+#   pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
+#                names_to = "sector") %>%
+#   mutate(country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T),
+#          sector = factor(sector, 
+#                          levels = c("Energy", "Industrial Processes", "Agriculture", "Waste", "Buildings", "International Bunkers", "Land-Use Change and Forestry"),
+#                          ordered = T),
+#          negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, "1", "0"))
 
 
 GHGTop10.CAIT.5sectors <- CAIT.current.sector.data %>%
-  filter(Code %in% as.matrix(List.Top10.EU)) %>%
-  rename("country" = "Code",
-         "Power & Heat" = "Electricity & Heat (GHG Emissions, CAIT)",
-         "Transport" = "Transport (GHG Emissions, CAIT)") %>%
-  mutate(Industry = rowSums(.[,c("Industry (GHG Emissions, CAIT)", 
-                                 "Manufacturing/Construction energy (GHG Emissions, CAIT)")],
-                            na.rm = T),
-         AFOLU = rowSums(.[,c("Agriculture (GHG Emissions, CAIT)",
-                              "Land-Use Change and Forestry (GHG Emissions, CAIT)")],
-                         na.rm = T),
-         Other = rowSums(.[,c("Buildings (GHG Emissions, CAIT)",
-                              "Waste (GHG Emissions, CAIT)",
-                              "Bunker Fuels (GHG Emissions, CAIT)",
-                              "Other Fuel Combustion (GHG Emissions, CAIT)",
-                              "Fugitive from energy production (GHG Emissions, CAIT)")],
-                         na.rm = T)) %>%
-  select(country, Year, `Power & Heat`, Industry, Transport, AFOLU, Other) %>%
-  pivot_longer(c("Industry", "Power & Heat", "Transport", "AFOLU", "Other"), 
-               names_to = "sector") %>%
-  left_join(country.labels, by = "country") %>%
-  mutate(country = factor(country, levels = List.Top10.EU$country, ordered = T),
+  left_join(country.labels, by = "country.name") %>%
+  filter(country %in% as.matrix(List.Top10.EU)) %>%
+  mutate(Sector = recode(Sector, `Electricity/Heat` = "Power & Heat"),
+         Sector = recode(Sector, Transportation = "Transport"),
+         Sector = recode(Sector, `Industrial Processes` = "Industry"),
+         Sector = recode(Sector, `Manufacturing/Construction` = "Industry"),
+         Sector = recode(Sector, Agriculture = "AFOLU"),
+         Sector = recode(Sector, `Land-Use Change and Forestry` = "AFOLU"),
+         Sector = recode(Sector, Building = "Other"),
+         Sector = recode(Sector, Waste = "Other"),
+         Sector = recode(Sector, `Bunker Fuels` = "Other"),
+         Sector = recode(Sector, `Other Fuel Combustion` = "Other"),
+         Sector = recode(Sector, `Fugitive Emissions` = "Other")) %>%
+  rename("sector" = "Sector") %>%
+  mutate(across(starts_with("20") | starts_with("19"), as.numeric)) %>%
+  pivot_longer(cols = starts_with("20") | starts_with("19"), names_to = "Year") %>%
+  group_by(country, country.name, Year, sector) %>%
+  summarise(value = sum(value, na.rm = T)) %>%
+  mutate(Year = as.numeric(Year),
+         country = factor(country, levels = List.Top10.EU$country, ordered = T),
          country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T),
          sector = factor(sector, levels = c("Power & Heat", "Industry", "Transport", "AFOLU", "Other"), ordered = T))
 
 
 # ---- 4.2 Bind GCAM totals data frame (with calculated gross/net totals) with full GCAM data frame ----
 
+# currently has 5 sector categories (Power & Heat, Industry, AFOLU, Transport, Other (buildings, waste, other fugitive gases))
 GHGTop10.GCAM <-
   GCAM.future.sector.data %>% 
-  mutate(Region = ifelse(Region=="EU", "EU-28", ifelse(Region=="USA", "United States", Region))) %>%
-  filter(Region!="World") %>%
+  filter(IncSector==1 & KyotoGas==1) %>%
+  pivot_longer(cols = starts_with("X2"), names_to = "Year") %>%
+  mutate(Year = as.numeric(gsub("X", "", Year)),
+         Region = ifelse(Region=="EU", "EU-28", 
+                         ifelse(Region=="USA", "United States", 
+                                                       Region)),
+         EmissionsCO2e = ((value * MtFactor)* as.numeric(GWP100)),
+         UnitAdjusted = "Mt CO2e/yr",
+         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel)) %>%
+  group_by(Model, Scenario, Region, Year, EmissionsSectorLabel, UnitAdjusted) %>%
+  summarise(EmissionsCO2e = sum(EmissionsCO2e)) %>%
   rename("country.name" = "Region",
-         "value" = "EmissionsMtCO2e",
-         "sector" = "EmisisonsSectorLabel") %>%
-  mutate(sector = factor(sector, 
-                         levels = c("Energy", "Industry", "Agriculture, Forestry & Other Land Use", "Transport", 
-                                    "Buildings", "Other"),
-                         ordered = T))
+         "sector" = "EmissionsSectorLabel",
+         "value" = "EmissionsCO2e") %>%
+  mutate(sector = recode(sector, `Agriculture, Forestry & Other Land Use` = "AFOLU"),
+         sector = recode(sector, Energy = "Power & Heat"),
+         sector = factor(sector, levels = c("Power & Heat", "Industry", "Transport", "AFOLU", "Other"), ordered = T))
 
-
-
-# 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#
-# ---- SECTION 5: COUNTRY-SPECIFIC EMISSIONS ----
-#
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#
-
-
-# # ---- 5.1 Filter historic and future trajectories data (Gütschow) for specific countries ----
-# 
-# for(i in List.Top10.EU$country) {
-#   filename <- paste("GHG.", i, sep = "")
-#   
-#   assign(filename,
-#          FutureGHG %>%
-#            mutate(country = recode(country, AUT = "EU27", BEL = "EU27", BGR = "EU27", HRV = "EU27", CYP = "EU27", CZE = "EU27", DNK = "EU27", 
-#                                    EST = "EU27", FIN = "EU27", FRA = "EU27", DEU = "EU27", GRC = "EU27", HUN = "EU27", IRL = "EU27", ITA = "EU27", 
-#                                    LTU =  "EU27", LUX = "EU27", LVA = "EU27", MLT = "EU27", NLD = "EU27", POL = "EU27", PRT = "EU27", ROU = "EU27",
-#                                    SWE = "EU27", SVK = "EU27", ESP = "EU27", SVN = "EU27")) %>%
-#            group_by(source, unit, entity, scenario, country, year) %>%
-#            summarise(value = sum(value)) %>%
-#            ungroup %>%
-#            mutate(marker = ifelse(scenario==marker.scenario, "1" , "0")) %>%
-#            filter(country==i  & year>=1850 & year<=2050))
-# }
-
-
-# # ---- 4.2 Filter historical sector-specific data (CAIT) for specific countries ----
-# 
-# for(i in List.Top10.EU$country) {
-#   filename <- paste("CAIT.", i, sep = "")
-#   
-#   assign(filename, 
-#          GHGTop10.CAIT %>%
-#            filter(country==i) %>%
-#            rename("Agriculture" = "Agriculture (GHG Emissions, CAIT)",
-#                   "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
-#                   "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
-#                   "Waste" = "Waste (GHG Emissions, CAIT)",
-#                   "Buildings" = "Buildings (GHG Emissions, CAIT)",
-#                   "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
-#            mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
-#                                         "Manufacturing/Construction energy (GHG Emissions, CAIT)",
-#                                         "Transport (GHG Emissions, CAIT)",
-#                                         "Other Fuel Combustion (GHG Emissions, CAIT)",
-#                                         "Fugitive from energy production (GHG Emissions, CAIT)")],
-#                                    na.rm = T)) %>%
-#            pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
-#                         names_to = "sector") %>%
-#            mutate(negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, 1, 0),
-#                   sector = factor(sector, 
-#                                   levels = c("Energy", "Industrial Processes", "Land-Use Change and Forestry", "Agriculture", "Waste", "Buildings", "International Bunkers"),
-#                                   ordered = T)))
-# }
 
 
