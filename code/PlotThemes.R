@@ -18,18 +18,14 @@
 # ---- 1.1 Labels to be used for bottom of figures (source, notes) -----
 
 source.label.gutschow <- "Source: Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\nNote: Units in gigatonnes (Gt) CO2e"
-source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e"
-source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions"
+source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote:     Units in gigatonnes (Gt) CO2e;\n              'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
+source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability,\n              University of Maryland\nNote:     Units in gigatonnes (Gt);\n              Scenario includes impacts of COVID-19 on GDP and emissions;\n              'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
+source.label.iea <- "Source: IEA World Energy Outlook 2019\nNote:     Oil production units in million barrels per day (mb/d);\n              Gas production units in billions cubic meters (bcm)"
+
 
 source.label.caittreemap <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions"
-source.label.gcamtreemap <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Sector-specific percentages reflect global share of all GHG emissions; scenario includes impacts of COVID-19 on GDP and emissions"
+source.label.gcamtreemap <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability,\n              University of Maryland\nNote:     Sector-specific percentages reflect global share of all GHG emissions;\n              Scenario includes impacts of COVID-19 on GDP and emissions;\n              'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
 
-
-source.label.caittreemap1 <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions; 'Industry' category comprised of industrial energy and process emissions"
-source.label.cait1 <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Units in gigatonnes (Gt) CO2e; 'Industry' category comprised of industrial energy and process emissions"
-
-source.label.gcam1 <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Units in gigatonnes (Gt); scenario includes impacts of COVID-19 on GDP and emissions; 'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
-source.label.gcamtreemap1 <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability, University of Maryland\nNote: Sector-specific percentages reflect global share of all GHG emissions; scenario includes impacts of COVID-19 on GDP and emissions;\n          'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
 
 
 # ---- 1.2 Create a new output figure folder with today's date ----
@@ -114,10 +110,10 @@ plot.theme.top30 <-
 
 
 plot.theme.sector <-
-  theme(plot.title = element_text(size = rel(1),
+  theme(plot.title = element_text(size = 12,
                                   colour = "#303030",
                                   face = "bold"),
-        plot.subtitle = element_text(size = rel(0.75),
+        plot.subtitle = element_text(size = 10,
                                      colour = "#303030"),
         axis.ticks.x = element_line(colour = "#C0C0C0"),
         axis.ticks.y = element_blank(),
@@ -131,11 +127,7 @@ plot.theme.sector <-
                                           linetype = 3),
         panel.grid.major.x = element_blank(),
         plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
-        axis.title = element_text(size = rel(0.9),
-                                  angle = 0,
-                                  face = "bold",
-                                  colour = "#303030"),
-        axis.text = element_text(size = rel(0.9),
+        axis.text = element_text(size = 9,
                                  angle = 0,
                                  colour = "#303030",
                                  lineheight = 0.7),
@@ -144,10 +136,10 @@ plot.theme.sector <-
 
 
 plot.theme.treemap <-
-  theme(plot.title = element_text(size = rel(1),
+  theme(plot.title = element_text(size = 14,
                                   colour = "#303030",
                                   face = "bold"),
-        plot.subtitle = element_text(size = rel(0.75),
+        plot.subtitle = element_text(size = 12,
                                      colour = "#303030"),
         axis.ticks = element_blank(),
         panel.background = element_rect(fill = "white",

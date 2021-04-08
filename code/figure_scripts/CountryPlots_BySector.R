@@ -11,7 +11,7 @@
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 1: Source Plot Themes, Wrangle Data ----
+# ---- SECTION 1: SOURCE PLOT THEMES, WRANGLE DATA ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -28,86 +28,24 @@ eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 sector.plot.list <- c("China", "United States", "EU-27", "India") 
 
 
-# ---- 1.3 Define dummy plot with legend with proper categories ---
-sector.7categories.legend <-
-  ggplot(GHGTop10.CAIT %>% filter(country.name=="China"), 
-         aes(x = Year, y = value/1000)) +
-  geom_area(aes(group = sector, fill = sector)) +
-  scale_fill_ptol(drop = F) +
-  legend.guide.top10
-
-sector.7categories.legend <- get_legend(sector.7categories.legend)
-
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 2: Historical Sector-Specific Emissions Plots ---
+# ---- SECTION 2: HISTORICAL SECTOR-SPECIFIC EMISSIONS PLOTS ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-# ---- 2.1 CHINA ----
+# ---- 2.1 China ----
+# -- same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
+# -- different data source between historical sector-specific emissions (CAIT) and treemap & future projected emissions (GCAM)
 
 China.Emissions.BySector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT %>% filter(country.name=="China"), aes(x = Year, y = value/1000)) +
-  geom_area(aes(group = sector, fill = sector),
-            position = "stack",
-            show.legend = F) +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  geom_hline(aes(yintercept = 0),
-             linetype = 3,
-             size = 0.35,
-             colour = "#C0C0C0") +
-  # annotate("text", x = 2016.5, y = 2, label = toupper("gross emissions"), 
-  #          size = 2.5, colour = "#909090", angle = 270) +
-  annotate("segment", x = 2016, xend = 2016.5, y = 0, yend = 0,
-           linetype = 1,
-           size = 0.35,
-           colour = "#C0C0C0") +
-  coord_cartesian(xlim = c(1990, 2016), clip = "off") +
-  scale_fill_ptol(drop = F) +
-  scale_x_continuous(name = "",
-                     expand = c(0, 0)) +
-  scale_y_continuous(name = "",
-                     expand = c(0, 0),
-                     limits = c(-2.5, 13),
-                     breaks = seq(-2, 12, by = 2),
-                     labels = c("-2 Gt", "0 Gt","2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
-  plot.theme.sector + legend.guide.top10 +
-  labs(title = "Annual Sectoral Emissions for China (1990 - 2016)",
-       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
-
-China.Emissions.BySector.Historical.Arranged <- 
-  grid.arrange(China.Emissions.BySector.Historical.Plot, 
-               sector.7categories.legend,
-               bottom = grid.text(label = source.label.cait, 
-                                  x = unit(45, "pt"),
-                                  just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
-               ncol = 2,
-               padding = unit(5, "pt"), 
-               vp = viewport(width = 1, height = 0.95),
-               widths = c(10, 4))
-
-
-# CHINA emissions plot with same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
-
-China.Emissions.5Sector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="China") %>%
-           mutate(sector = recode(sector, Industry = "Industry (Energy & Process Emissions)")),
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="China"),
                   aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
   scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0)) +
@@ -116,215 +54,139 @@ China.Emissions.5Sector.Historical.Plot <-
                      limits = c(0, 18),
                      breaks = seq(3, 15, by = 3),
                      labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt", "15 Gt")) +
-  legend.guide.top10 +
+  legend.guide.top10 + plot.theme.sector + 
   labs(title = "Annual Sectoral Emissions for China (1990 - 2017)",
-       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n") +
-  theme(plot.title = element_text(size = rel(1),
-                                  colour = "#303030",
-                                  face = "bold"),
-        plot.subtitle = element_text(size = rel(0.75),
-                                     colour = "#303030"),
-        axis.ticks.x = element_line(colour = "#C0C0C0"),
-        axis.ticks.y = element_blank(),
-        panel.background = element_rect(fill = "white",
-                                        colour = "#909090"),
-        panel.border = element_rect(fill = NA,
-                                    size = 0.25,
-                                    colour = "#C0C0C0"),
-        panel.grid.major.y = element_line(colour = "#C0C0C0",
-                                          size = 0.35,
-                                          linetype = 3),
-        panel.grid.major.x = element_blank(),
-        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
-        axis.title = element_text(size = rel(0.9),
-                                  angle = 0,
-                                  face = "bold",
-                                  colour = "#303030"),
-        axis.text = element_text(size = rel(0.9),
-                                 angle = 0,
-                                 colour = "#303030",
-                                 lineheight = 0.7),
-        legend.position = "left",
-        legend.box.spacing = unit(0.1, "cm"))
+       subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
 
-China.Emissions.5Sector.Historical.Arranged <- 
-  grid.arrange(China.Emissions.5Sector.Historical.Plot, 
+
+China.Emissions.BySector.Historical.Arranged <- 
+  grid.arrange(China.Emissions.BySector.Historical.Plot, 
                bottom = grid.text(label = source.label.cait, 
-                                  x = unit(255, "pt"),
+                                  x = unit(47, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
 
 
-# ---- 2.2 UNITED STATES ----
+# ---- 2.2 United States ----
+# -- same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
+# -- different data source between historical sector-specific emissions (CAIT) and treemap & future projected emissions (GCAM)
 
 USA.Emissions.BySector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT %>% filter(country.name=="United States"), 
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="United States"),
          aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
-            position = "stack",
-            show.legend = F) +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  geom_hline(aes(yintercept = 0),
-             linetype = 3,
-             size = 0.35,
-             colour = "#C0C0C0") +
-  annotate("segment", x = 2016, xend = 2016.5, y = 0, yend = 0,
-           linetype = 1,
-           size = 0.35,
-           colour = "#C0C0C0") +
-  coord_cartesian(xlim = c(1990, 2016), clip = "off") +
-  scale_fill_ptol(drop = F) +
+            position = "stack") +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0)) +
   scale_y_continuous(name = "",
                      expand = c(0, 0),
-                     limits = c(-2.5, 13),
-                     breaks = seq(-2, 12, by = 2),
-                     labels = c("-2 Gt", "0 Gt","2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
-  plot.theme.sector + legend.guide.top10 +
-  labs(title = "Annual Sectoral Emissions for United States (1990 - 2016)",
+                     limits = c(0, 18),
+                     breaks = seq(3, 15, by = 3),
+                     labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt", "15 Gt")) +
+  legend.guide.top10 + plot.theme.sector + 
+  labs(title = "Annual Sectoral Emissions for United States (1990 - 2017)",
        subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
+
 
 USA.Emissions.BySector.Historical.Arranged <- 
   grid.arrange(USA.Emissions.BySector.Historical.Plot, 
-               sector.7categories.legend,
                bottom = grid.text(label = source.label.cait, 
-                                  x = unit(45, "pt"),
+                                  x = unit(47, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
-               ncol = 2,
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
+               ncol = 1,
                padding = unit(5, "pt"), 
-               vp = viewport(width = 1, height = 0.95),
-               widths = c(10, 4))
+               vp = viewport(width = 1, height = 0.95))
+
 
 
 # ---- 2.3 EU-27 ----
+# -- same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
+# -- different data source between historical sector-specific emissions (CAIT) and treemap & future projected emissions (GCAM)
 
 EU27.Emissions.BySector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT %>% filter(country.name=="EU-27"), 
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="EU-27"),
          aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
-            position = "stack",
-            show.legend = F) +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  geom_hline(aes(yintercept = 0),
-             linetype = 3,
-             size = 0.35,
-             colour = "#C0C0C0") +
-  annotate("segment", x = 2016, xend = 2016.5, y = 0, yend = 0,
-           linetype = 1,
-           size = 0.35,
-           colour = "#C0C0C0") +
-  coord_cartesian(xlim = c(1990, 2016), clip = "off") +
-  scale_fill_ptol(drop = F) +
+            position = "stack") +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0)) +
   scale_y_continuous(name = "",
                      expand = c(0, 0),
-                     limits = c(-2.5, 13),
-                     breaks = seq(-2, 12, by = 2),
-                     labels = c("-2 Gt", "0 Gt","2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
-  plot.theme.sector + legend.guide.top10 +
-  labs(title = "Annual Sectoral Emissions for EU-27 (1990 - 2016)",
+                     limits = c(0, 18),
+                     breaks = seq(3, 15, by = 3),
+                     labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt", "15 Gt")) +
+  legend.guide.top10 + plot.theme.sector + 
+  labs(title = "Annual Sectoral Emissions for EU-27 (1990 - 2017)",
        subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
+
 
 EU27.Emissions.BySector.Historical.Arranged <- 
   grid.arrange(EU27.Emissions.BySector.Historical.Plot, 
-               sector.7categories.legend,
                bottom = grid.text(label = source.label.cait, 
-                                  x = unit(45, "pt"),
+                                  x = unit(47, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
-               ncol = 2,
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
+               ncol = 1,
                padding = unit(5, "pt"), 
-               vp = viewport(width = 1, height = 0.95),
-               widths = c(10, 4))
+               vp = viewport(width = 1, height = 0.95))
 
 
-# ---- 2.4 INDIA ----
+# ---- 2.4 India ----
+# -- same sector categories as treemap (Power & Heat, Industry, Transport, AFOLU, Other)
+# -- different data source between historical sector-specific emissions (CAIT) and treemap & future projected emissions (GCAM)
 
 India.Emissions.BySector.Historical.Plot <-
-  ggplot(GHGTop10.CAIT %>% filter(country.name=="India"), 
+  ggplot(GHGTop10.CAIT.5sectors %>% filter(country.name=="India"),
          aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
-            position = "stack",
-            show.legend = F) +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  geom_hline(aes(yintercept = 0),
-             linetype = 3,
-             size = 0.35,
-             colour = "#C0C0C0") +
-  annotate("segment", x = 2016, xend = 2016.5, y = 0, yend = 0,
-           linetype = 1,
-           size = 0.35,
-           colour = "#C0C0C0") +
-  coord_cartesian(xlim = c(1990, 2016), clip = "off") +
-  scale_fill_ptol(drop = F) +
+            position = "stack") +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0)) +
   scale_y_continuous(name = "",
                      expand = c(0, 0),
-                     limits = c(-2.5, 13),
-                     breaks = seq(-2, 12, by = 2),
-                     labels = c("-2 Gt", "0 Gt","2 Gt", "4 Gt", "6 Gt", "8 Gt", "10 Gt", "12 Gt")) +
-  plot.theme.sector + legend.guide.top10 +
-  labs(title = "Annual Sectoral Emissions for India (1990 - 2016)",
+                     limits = c(0, 18),
+                     breaks = seq(3, 15, by = 3),
+                     labels = c("3 Gt", "6 Gt", "9 Gt", "12 Gt", "15 Gt")) +
+  legend.guide.top10 + plot.theme.sector + 
+  labs(title = "Annual Sectoral Emissions for India (1990 - 2017)",
        subtitle = "Historic emissions (Gt CO2e) from fossil fuel combustion, industrial processes, and land-use change\n")
+
 
 India.Emissions.BySector.Historical.Arranged <- 
   grid.arrange(India.Emissions.BySector.Historical.Plot, 
-               sector.7categories.legend,
                bottom = grid.text(label = source.label.cait, 
-                                  x = unit(45, "pt"),
+                                  x = unit(47, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
-               ncol = 2,
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
+               ncol = 1,
                padding = unit(5, "pt"), 
-               vp = viewport(width = 1, height = 0.95),
-               widths = c(10, 4))
-
+               vp = viewport(width = 1, height = 0.95))
 
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 3: Projections of Sector-Specific Emissions Plots ---
+# ---- SECTION 3: PROJECTIONS OF SECTOR-SPECIFIC EMISSIONS PLOTS ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-x <- GHGTop10.GCAM %>% filter(country.name=="China") %>%
-  group_by(Year) %>%
-  summarise(total = sum(value, na.rm = T))
-# ---- 3.1 CHINA ----
+
+# ---- 3.1 China ----
 
 China.Emissions.BySector.Future.Plot <-
-  ggplot(GHGTop10.GCAM %>% filter(country.name=="China") %>%
-           mutate(sector = recode(sector, Industry = "Industry (Energy & Process Emissions)")), 
+  ggplot(GHGTop10.GCAM %>% filter(country.name=="China"), 
          aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
   scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
@@ -341,28 +203,23 @@ China.Emissions.BySector.Future.Plot <-
 
 China.Emissions.BySector.Future.Arranged <- 
   grid.arrange(China.Emissions.BySector.Future.Plot, 
-               bottom = grid.text(label = source.label.gcam1, 
+               bottom = grid.text(label = source.label.gcam, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
 
 
-# ---- 3.2 UNITED STATES ----
+# ---- 3.2 United States ----
 
 USA.Emissions.BySector.Future.Plot <-
   ggplot(GHGTop10.GCAM %>% filter(country.name=="United States"), 
          aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  scale_fill_manual(values = colours.6categories) +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
                      breaks = seq(2020, 2100, by = 10),
@@ -381,7 +238,7 @@ USA.Emissions.BySector.Future.Arranged <-
                bottom = grid.text(label = source.label.gcam, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -390,15 +247,11 @@ USA.Emissions.BySector.Future.Arranged <-
 # ---- 3.3 EU-28 ----
 
 EU28.Emissions.BySector.Future.Plot <-
-  ggplot(GHGTop10.GCAM %>% filter(country.name=="EU-28"), aes(x = Year, y = value/1000)) +
+  ggplot(GHGTop10.GCAM %>% filter(country.name=="EU-28"), 
+         aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  scale_fill_manual(values = colours.6categories) +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
                      breaks = seq(2020, 2100, by = 10),
@@ -417,7 +270,7 @@ EU28.Emissions.BySector.Future.Arranged <-
                bottom = grid.text(label = source.label.gcam, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
@@ -426,15 +279,11 @@ EU28.Emissions.BySector.Future.Arranged <-
 # ---- 3.4 INDIA ----
 
 India.Emissions.BySector.Future.Plot <-
-  ggplot(GHGTop10.GCAM %>% filter(country.name=="India"), aes(x = Year, y = value/1000)) +
+  ggplot(GHGTop10.GCAM %>% filter(country.name=="India"), 
+         aes(x = Year, y = value/1000)) +
   geom_area(aes(group = sector, fill = sector),
             position = "stack") +
-  # geom_line(aes(group = sector),
-  #           colour = "#C0C0C0",
-  #           size = 0.5,
-  #           position = "stack",
-  #           show.legend = F) +
-  scale_fill_manual(values = colours.6categories) +
+  scale_fill_manual(values = colours.5categories) +
   scale_x_continuous(name = "",
                      expand = c(0, 0),
                      breaks = seq(2020, 2100, by = 10),
@@ -453,10 +302,11 @@ India.Emissions.BySector.Future.Arranged <-
                bottom = grid.text(label = source.label.gcam, 
                                   x = unit(45, "pt"),
                                   just = "left",
-                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+                                  gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
+
 
 
 # 
@@ -467,35 +317,28 @@ India.Emissions.BySector.Future.Arranged <-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-# ---- CHINA - historical emissions by sector ----
+# ---- 4.1 CHINA - historical emissions by sector ----
 png(paste(FigureFileName, "/China.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 9, res = 400)
 grid.newpage()
 grid.draw(China.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# ---- CHINA - future projected emissions by sector ----
+# ---- 4.2 CHINA - future projected emissions by sector ----
 png(paste(FigureFileName, "/China.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()
 grid.draw(China.Emissions.BySector.Future.Arranged)
 dev.off()
 
-# ---- CHINA - historical emissions, 5 sectors (harmonized with treemap) ----
-png(paste(FigureFileName, "/China.historical.5sectors2.png", sep = ""),
-    units = "in", height = 6, width = 9.2, res = 400)
-grid.newpage()
-grid.draw(China.Emissions.5Sector.Historical.Arranged)
-dev.off()
-
-# ---- USA - historical emissions by sector ----
+# ---- 4.3 USA - historical emissions by sector ----
 png(paste(FigureFileName, "/USA.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 9, res = 400)
 grid.newpage()
 grid.draw(USA.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# ---- USA - future projected emissions by sector ----
+# ---- 4.4 USA - future projected emissions by sector ----
 png(paste(FigureFileName, "/USA.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()
@@ -503,14 +346,14 @@ grid.draw(USA.Emissions.BySector.Future.Arranged)
 dev.off()
 
 
-# ---- EU27 - historical emissions by sector ----
+# ---- 4.5 EU27 - historical emissions by sector ----
 png(paste(FigureFileName, "/EU27.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 9, res = 400)
 grid.newpage()
 grid.draw(EU27.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# ---- EU28 - future projected emissions by sector ----
+# ---- 4.6 EU28 - future projected emissions by sector ----
 png(paste(FigureFileName, "/EU28.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()
@@ -518,14 +361,14 @@ grid.draw(EU28.Emissions.BySector.Future.Arranged)
 dev.off()
 
 
-# ---- INDIA - historical emissions by sector ----
+# ---- 4.7 INDIA - historical emissions by sector ----
 png(paste(FigureFileName, "/India.historical.bysector.png", sep = ""),
     units = "in", height = 6, width = 9, res = 400)
 grid.newpage()
 grid.draw(India.Emissions.BySector.Historical.Arranged)
 dev.off()
 
-# ---- INDIA - future projected emissions by sector ----
+# ---- 4.8 INDIA - future projected emissions by sector ----
 png(paste(FigureFileName, "/India.future.bysector.png", sep = ""),
     units = "in", height = 6, width = 9.2, res = 400)
 grid.newpage()

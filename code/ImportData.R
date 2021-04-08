@@ -32,10 +32,6 @@ GCAM.future.sector.data <-
   import('data/inputs/GCAM_emissions_data_20210224x.xlsx') %>%
   rename("EmissionsSectorLabel" = "EmisisonsSectorLabel")
 
-# CAIT.current.sector.data <- 
-#   import('data/inputs/CAIT_GHG_sector.csv') %>% # note, all values are in Mt (megatons)
-#   mutate(Code = ifelse(Entity=="European Union (27)", "EU27", Code))
-
 CAIT.current.sector.data <- 
   import('data/inputs/CAIT_historical_emissions_20210225.csv', header = T) %>%
   mutate(country.name = ifelse(Country=="European Union (27)", "EU-27", Country))
@@ -261,38 +257,7 @@ GHGTop30.MultiScenarios.EU <-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
-# ---- 4.1 Create data frames for historic emissions for Top 10 and Top 20 emitters (CAIT data) ----
-
-# GHGTop10.CAIT <- CAIT.current.sector.data %>%
-#   filter(Country %in% as.matrix(List.Top10.EU)) %>%
-#   rename("country" = "Country",
-#          "Agriculture" = "Agriculture (GHG Emissions, CAIT)",
-#          "International Bunkers" = "Bunker Fuels (GHG Emissions, CAIT)",
-#          "Industrial Processes" = "Industry (GHG Emissions, CAIT)", 
-#          "Waste" = "Waste (GHG Emissions, CAIT)",
-#          "Buildings" = "Buildings (GHG Emissions, CAIT)",
-#          "Land-Use Change and Forestry" = "Land-Use Change and Forestry (GHG Emissions, CAIT)") %>%
-#   mutate(Energy = rowSums(.[,c("Electricity & Heat (GHG Emissions, CAIT)",
-#                                "Manufacturing/Construction energy (GHG Emissions, CAIT)",
-#                                "Transport (GHG Emissions, CAIT)",
-#                                "Other Fuel Combustion (GHG Emissions, CAIT)",
-#                                "Fugitive from energy production (GHG Emissions, CAIT)")],
-#                           na.rm = T)) %>%
-#   mutate(net.total = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-#                                   "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
-#          gross.total.minusLUCF = rowSums(.[,c("International Bunkers", "Buildings", "Waste", "Agriculture", 
-#                                               "Land-Use Change and Forestry", "Industrial Processes", "Energy")], na.rm = T),
-#          gross.total = ifelse(`Land-Use Change and Forestry`<0, 
-#                               gross.total.minusLUCF + abs(`Land-Use Change and Forestry`),
-#                               gross.total.minusLUCF)) %>%
-#   pivot_longer(c("International Bunkers", "Buildings", "Waste", "Agriculture", "Land-Use Change and Forestry", "Industrial Processes", "Energy"),
-#                names_to = "sector") %>%
-#   mutate(country.name = factor(country.name, levels = List.Top10.EU$country.name, ordered = T),
-#          sector = factor(sector, 
-#                          levels = c("Energy", "Industrial Processes", "Agriculture", "Waste", "Buildings", "International Bunkers", "Land-Use Change and Forestry"),
-#                          ordered = T),
-#          negativeLUCF = ifelse(sector=="Land-Use Change and Forestry" & value<0, "1", "0"))
-
+# ---- 4.1 CAIT data: create data frame for historic emissions for Top 10 emitters across 5 sector categories ----
 
 GHGTop10.CAIT.5sectors <- CAIT.current.sector.data %>%
   left_join(country.labels, by = "country.name") %>%
@@ -319,11 +284,15 @@ GHGTop10.CAIT.5sectors <- CAIT.current.sector.data %>%
          sector = factor(sector, levels = c("Power & Heat", "Industry", "Transport", "AFOLU", "Other"), ordered = T))
 
 
-# ---- 4.2 Bind GCAM totals data frame (with calculated gross/net totals) with full GCAM data frame ----
+# ---- 4.2 GCAM data: create data frame for modelled projected emissions for Top 10 emitters across 5 sector categories ----
 
 # currently has 5 sector categories (Power & Heat, Industry, AFOLU, Transport, Other (buildings, waste, other fugitive gases))
+# --- see excel spreadsheet that identifies the what observations from the raw GCAM data comprise each of the 5 sector categories
 GHGTop10.GCAM <-
   GCAM.future.sector.data %>% 
+  mutate(IncSector = ifelse(SuperSector=="Industrial Processes", 1, 
+                            ifelse(grepl("Freight", Variable) | grepl("Passenger", Variable) | grepl("Cement", Variable), 
+                                   0, IncSector))) %>%
   filter(IncSector==1 & KyotoGas==1) %>%
   pivot_longer(cols = starts_with("X2"), names_to = "Year") %>%
   mutate(Year = as.numeric(gsub("X", "", Year)),
@@ -332,7 +301,9 @@ GHGTop10.GCAM <-
                                                        Region)),
          EmissionsCO2e = ((value * MtFactor)* as.numeric(GWP100)),
          UnitAdjusted = "Mt CO2e/yr",
-         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel)) %>%
+         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel),
+         EmissionsSectorLabel = ifelse(Gas%in%c("HFC", "F-Gases") | SuperSector=="Industrial Processes", "Industry", 
+                                                     EmissionsSectorLabel)) %>%
   group_by(Model, Scenario, Region, Year, EmissionsSectorLabel, UnitAdjusted) %>%
   summarise(EmissionsCO2e = sum(EmissionsCO2e)) %>%
   rename("country.name" = "Region",
@@ -343,4 +314,82 @@ GHGTop10.GCAM <-
          sector = factor(sector, levels = c("Power & Heat", "Industry", "Transport", "AFOLU", "Other"), ordered = T))
 
 
+# Find the total magnitude and relative percent value for each sub-section of industry category (energy consumption, process emissions, fugitive emissions)
+GCAM.Top10.IndustrySubSections <-
+  GCAM.future.sector.data %>% 
+  mutate(IncSector = ifelse(SuperSector=="Industrial Processes", 1, 
+                            ifelse(grepl("Freight", Variable) | grepl("Passenger", Variable) | grepl("Cement", Variable), 
+                                   0, IncSector))) %>%
+  filter(IncSector==1 & KyotoGas==1) %>%
+  pivot_longer(cols = starts_with("X2"), names_to = "Year") %>%
+  mutate(Year = as.numeric(gsub("X", "", Year)),
+         Region = ifelse(Region=="EU", "EU-28", 
+                         ifelse(Region=="USA", "United States", 
+                                Region)),
+         EmissionsCO2e = ((value * MtFactor)* as.numeric(GWP100)),
+         UnitAdjusted = "Mt CO2e/yr",
+         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel),
+         EmissionsSectorLabel = ifelse(Gas%in%c("HFC", "F-Gases") | SuperSector=="Industrial Processes", "Industry", 
+                                       EmissionsSectorLabel),
+         Industry.Subcategory = ifelse(Sector=="Demand", "Energy Consumption",
+                                       ifelse(Sector%in%c("Energy", "Total", "Industrial Processes") |
+                                                (Sector=="Supply" & Gas!="CH4"), "Process Emissions", "Fugitive Emissions"))) %>%
+  filter(EmissionsSectorLabel=="Industry") %>%
+  group_by(Model, Scenario, Region, Year, Industry.Subcategory, UnitAdjusted) %>%
+  summarise(EmissionsCO2e = sum(EmissionsCO2e)) %>%
+  rename("CountryName" = "Region") %>%
+  ungroup() %>%
+  group_by(CountryName, Year) %>%
+  mutate(Percent.IndustryTotal.PerCountryYear = (EmissionsCO2e / sum(EmissionsCO2e, na.rm = T)) * 100)
+
+GCAM.Top10.AllIndustryVars <-
+  GCAM.future.sector.data %>% 
+  mutate(IncSector = ifelse(SuperSector=="Industrial Processes", 1, 
+                            ifelse(grepl("Freight", Variable) | grepl("Passenger", Variable) | grepl("Cement", Variable), 
+                                   0, IncSector))) %>%
+  filter(IncSector==1 & KyotoGas==1) %>%
+  pivot_longer(cols = starts_with("X2"), names_to = "Year") %>%
+  mutate(Year = as.numeric(gsub("X", "", Year)),
+         Region = ifelse(Region=="EU", "EU-28", 
+                         ifelse(Region=="USA", "United States", 
+                                Region)),
+         EmissionsCO2e = ((value * MtFactor)* as.numeric(GWP100)),
+         UnitAdjusted = "Mt CO2e/yr",
+         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel),
+         EmissionsSectorLabel = ifelse(Gas%in%c("HFC", "F-Gases") | SuperSector=="Industrial Processes", "Industry", 
+                                       EmissionsSectorLabel)) %>%
+  filter(EmissionsSectorLabel=="Industry") %>%
+  group_by(Model, Scenario, Region, Year, Variable, UnitAdjusted) %>%
+  summarise(EmissionsCO2e = sum(EmissionsCO2e)) %>%
+  rename("CountryName" = "Region") %>%
+  ungroup() %>%
+  group_by(CountryName, Year) %>%
+  mutate(Percent.IndustryTotal.PerCountryYear = (EmissionsCO2e / sum(EmissionsCO2e, na.rm = T)) * 100)
+
+
+GCAM.Top10.AllVars <-
+  GCAM.future.sector.data %>% 
+  mutate(IncSector = ifelse(SuperSector=="Industrial Processes", 1, 
+                            ifelse(grepl("Freight", Variable) | grepl("Passenger", Variable) | grepl("Cement", Variable), 
+                                   0, IncSector))) %>%
+  filter(IncSector==1 & KyotoGas==1) %>%
+  pivot_longer(cols = starts_with("X2"), names_to = "Year") %>%
+  mutate(Year = as.numeric(gsub("X", "", Year)),
+         Region = ifelse(Region=="EU", "EU-28", 
+                         ifelse(Region=="USA", "United States", 
+                                Region)),
+         EmissionsCO2e = ((value * MtFactor)* as.numeric(GWP100)),
+         UnitAdjusted = "Mt CO2e/yr",
+         EmissionsSectorLabel = ifelse(EmissionsSectorLabel=="Buildings", "Other", EmissionsSectorLabel),
+         EmissionsSectorLabel = ifelse(Gas%in%c("HFC", "F-Gases") | SuperSector=="Industrial Processes", "Industry", 
+                                       EmissionsSectorLabel)) %>%
+  group_by(Model, Scenario, Region, Year, EmissionsSectorLabel, Variable, UnitAdjusted) %>%
+  summarise(EmissionsCO2e = sum(EmissionsCO2e)) %>%
+  rename("CountryName" = "Region") %>%
+  ungroup() %>%
+  group_by(CountryName, Year) %>%
+  mutate(Percent.IndustryTotal.PerCountryYear = (EmissionsCO2e / sum(EmissionsCO2e, na.rm = T)) * 100)
+
+# export(GCAM.Top10.AllVars, 'data/outputs/GCAM.Top10.AllVars.csv')
+# export(GCAM.Top10.AllIndustryVars, 'data/outputs/GCAM.Top10.AllIndustryVars.csv')
 
