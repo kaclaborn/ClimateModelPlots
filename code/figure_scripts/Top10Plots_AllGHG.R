@@ -11,7 +11,7 @@
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 1: Source Plot Themes ----
+# ---- SECTION 1: SOURCE PLOT THEMES ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -25,7 +25,7 @@ eval(parse('code/PlotThemes.R', encoding = 'UTF-8'))
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 2: Top 10 Emissions Plots - STACKED ----
+# ---- SECTION 2: TOP 10 EMISSIONS PLOTS - STACKED ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -108,7 +108,7 @@ Stacked.Top10Emissions.Future.Arranged <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 3: Top 10 Emissions Plots - NOT STACKED ----
+# ---- SECTION 3: TOP 10 EMISSIONS PLOTS - NOT STACKED ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -217,35 +217,35 @@ NonStacked.Top10Emissions.Future.Arranged <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 4: Export----
+# ---- SECTION 4: EXPORT ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
 
-# ---- OPTION 1 PLOT - historical and future trajectories; stacked ----
-png(paste(FigureFileName, "/Top10.Option1.png", sep = ""),
+# ---- 4.1 Historical and future trajectories; stacked ----
+png(paste(FigureFileName, "/Top10.historical.future.stacked.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(Stacked.Top10Emissions.Time.Arranged)
 dev.off()
 
-# ---- OPTION 2 PLOT - only future trajectories; stacked ----
-png(paste(FigureFileName, "/Top10.Option2.png", sep = ""),
+# ---- 4.2 Only future trajectories; stacked ----
+png(paste(FigureFileName, "/Top10.future.stacked.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(Stacked.Top10Emissions.Future.Arranged)
 dev.off()
 
-# ---- OPTION 3 PLOT - historical and future trajectories; non-stacked ----
-png(paste(FigureFileName, "/Top10.Option3.png", sep = ""),
+# ---- 4.3 Historical and future trajectories; non-stacked ----
+png(paste(FigureFileName, "/Top10.historical.future.nonstacked.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(NonStacked.Top10Emissions.Time.Arranged)
 dev.off()
 
-# ---- OPTION 4 PLOT - only future trajectories; non-stacked ----
-png(paste(FigureFileName, "/Top10.Option4.png", sep = ""),
+# ---- 4.4 Only future trajectories; non-stacked ----
+png(paste(FigureFileName, "/Top10.future.nonstacked.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
 grid.draw(NonStacked.Top10Emissions.Future.Arranged)

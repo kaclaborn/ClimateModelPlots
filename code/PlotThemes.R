@@ -22,8 +22,6 @@ source.label.cait <- "Source: Climate Watch Historical GHG Emissions. 2020. <htt
 source.label.gcam <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability,\n              University of Maryland\nNote:     Units in gigatonnes (Gt);\n              Scenario includes impacts of COVID-19 on GDP and emissions;\n              'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
 source.label.iea <- "Source: IEA World Energy Outlook 2019\nNote:     Oil production units in million barrels per day (mb/d);\n              Gas production units in billions cubic meters (bcm)"
 
-
-source.label.caittreemap <- "Source: Climate Watch Historical GHG Emissions. 2020. <https://www.climatewatchdata.org/ghg-emissions>\nNote: Sector-specific percentages reflect global share of all GHG emissions"
 source.label.gcamtreemap <- "Source: Scenario from the Global Change Analysis Model (GCAM 5.3) by the Center for Global Sustainability,\n              University of Maryland\nNote:     Sector-specific percentages reflect global share of all GHG emissions;\n              Scenario includes impacts of COVID-19 on GDP and emissions;\n              'Industry' category comprised of industrial energy consumption, process emissions, and fugitive emissions"
 
 

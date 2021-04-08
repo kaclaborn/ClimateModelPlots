@@ -2,8 +2,8 @@
 # code: Treemap by sector, using GCAM data
 # 
 # ---- sections ----
-# 1.  Source plot themes, wrangle data
-# 2.  Create treemap
+# 1.  Source Plot Themes, Wrangle Data
+# 2.  Create Treemap
 # 3.  Export
 # 
 # 

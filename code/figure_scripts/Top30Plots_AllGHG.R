@@ -5,12 +5,12 @@
 # 1.  Source Plot Themes, Wrangle Data
 # 2.  Top 30 Current Emissions Bar Plot
 # 3.  Export
-
-
+# 
+# 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 1: Source Plot Themes, Wrangle Data ----
+# ---- SECTION 1: SOURCE PLOT THEMES, WRANGLE DATA ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -39,7 +39,7 @@ Grouped.GHG.Proportions <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 2: Top 30 Current Emissions Bar Plot ----
+# ---- SECTION 2: TOP 30 CURRENT EMISSIONS BAR PLOT ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -96,13 +96,14 @@ Top30Emissions.Bar.Arranged <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 3 : Export ----
+# ---- SECTION 3 : EXPORT ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
 
 # ---- Top 30 bar plot ----
+
 png(paste(FigureFileName, "/Top30.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()

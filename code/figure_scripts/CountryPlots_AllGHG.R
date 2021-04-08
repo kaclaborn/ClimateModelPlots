@@ -4,9 +4,8 @@
 # ---- sections ----
 # 1.  Source Plot Themes, Wrangle Data
 # 2.  Historical & Projected Country-Specific Emissions Plots
-# 3.  Export
-
-
+# 
+# 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -98,52 +97,3 @@ for(i in country.allghg.plot.list) {
   dev.off()
   
 }
-
-
-# ***NON AUTOMATED VERSION (FOR CHINA)
-
-# # ---- CHINA ----
-# 
-# # All IAMs as separate lines & 'wedge
-# CHN.GHGEmissions.Future.Plot <- 
-#   ggplot(GHGTop30.MultiScenarios.EU %>% filter(year>=1950 & year<=2050 & country.name=="China") %>% 
-#            group_by(year) %>% mutate(min = min(value),
-#                                      max = max(value)), 
-#          aes(x = year, y = value/1000000)) +
-#   geom_line(aes(group = scenario, size = marker, alpha = marker, linetype = marker)) +
-#   geom_ribbon(aes(ymin = min/1000000, ymax = max/1000000),
-#               stat = "identity", outline.type = "full", 
-#               fill = "#303030", alpha = 0.3) +
-#   geom_vline(aes(xintercept = 2018),
-#              size = 0.5, 
-#              colour = "#909090",
-#              alpha = 0.5) +
-#   annotate("text", x = 2015, y = 1, label = "2018", size = 2.5, colour = "#909090") +
-#   scale_x_continuous(name = "",
-#                      expand = c(0, 0)) +
-#   scale_y_continuous(name = "", 
-#                      expand = c(0, 0),
-#                      limits = c(0,25),
-#                      breaks = seq(5, 20, by = 5),
-#                      labels = c("5 Gt", "10 Gt", "15 Gt", "20 Gt")) +
-#   scale_linetype_manual(values = c("0" = 5, "1" = 1), 
-#                         guide = F) +
-#   scale_size_manual(values = c("0" = 0.3, "1" = 1.2),
-#                     guide = F) +
-#   scale_alpha_manual(values = c("0" = 0.4, "1" = 1),
-#                      guide = F) +
-#   plot.theme.top10 +
-#   labs(title = "Annual GHG emissions trajectories - China", 
-#        subtitle = "Future projected emissions of Kyoto greenhouse gases (AR4) in CO2e,\nSSP2 baseline scenario with associated integrated assessment models & uncertainty")
-# 
-# CHN.GHGEmissions.Future.Arranged <- 
-#   grid.arrange(CHN.GHGEmissions.Future.Plot, 
-#                bottom = grid.text(label = source.label.gutschow,
-#                                   x = unit(45, "pt"),
-#                                   just = "left",
-#                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
-#                ncol = 1,
-#                padding = unit(5, "pt"), 
-#                vp = viewport(width = 1, height = 0.95))
-
-
