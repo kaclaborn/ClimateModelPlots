@@ -451,7 +451,7 @@ Reserves <-
   mutate(group = 1,
          degreesC = ifelse(is.na(degreesC), (value/1000) * 1.75, degreesC),
          category = factor(category, 
-                           levels = c("Oil","Gas", "Coal", "postSR15", "SR15"),
+                           levels = c("Coal", "Gas", "Oil", "postSR15", "SR15"),
                            ordered = T))
 
 
@@ -504,7 +504,7 @@ Reserves.TempRise.BarPlot <-
            colour = "#303030") +
   scale_fill_manual(name = "",
                     values = rev(colours.5categories),
-                    labels = c("Oil", "Gas", "Coal", 
+                    labels = c("Coal", "Gas", "Oil", 
                                "2018-2019", "1880-2015"),
                     guide = guide_legend(label.theme = element_text(size = 9))) +
   scale_x_discrete(name = "",
