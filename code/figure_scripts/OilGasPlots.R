@@ -33,7 +33,12 @@ IEA.OilGas.Demand.bySector <-
   import('data/inputs/OilGas_Demand_Sector_IEA2019.csv', header = T) 
 
 Rystad.DevelopedReserves <-
-  import('data/inputs/DevelopedReserves_Rystad.csv', header = T)
+  import('data/inputs/DevelopedReserves_Rystad.xlsx', sheet = "Revised")
+
+TempScale.forDevelopedReserves <-
+  import('data/inputs/DevelopedReserves_Rystad.xlsx', sheet = "TempScale") %>%
+  rename("warming" = "AdditionalWarmingAfter2015",
+         "Mt" = "CumulativeGt")
 
 
 # ---- 1.3 Source PlotThemes.R ----
@@ -446,12 +451,19 @@ dev.off()
 
 # ---- 4.1 WRANGLE DATA ----
 
+# Reserves <-
+#   Rystad.DevelopedReserves %>%
+#   mutate(group = 1,
+#          degreesC = ifelse(is.na(degreesC), (value/1000) * 1.75, degreesC),
+#          category = factor(category, 
+#                            levels = c("Coal", "Gas", "Oil", "postSR15", "SR15"),
+#                            ordered = T))
+
 Reserves <-
   Rystad.DevelopedReserves %>%
   mutate(group = 1,
-         degreesC = ifelse(is.na(degreesC), (value/1000) * 1.75, degreesC),
          category = factor(category, 
-                           levels = c("Coal", "Gas", "Oil", "postSR15", "SR15"),
+                           levels = c("Coal", "Gas", "Oil", "2016-2019", "1850-2015"),
                            ordered = T))
 
 
@@ -460,7 +472,7 @@ Reserves <-
 # Stacked bar chart
 Reserves.TempRise.BarPlot <-
   ggplot(data = Reserves,
-         aes(x = group, y = degreesC)) +
+         aes(x = group, y = value)) +
   geom_bar(aes(fill = category),
            width = 0.5,
            alpha = 0.9,
@@ -468,52 +480,119 @@ Reserves.TempRise.BarPlot <-
            position = "stack",
            show.legend = T) +
   geom_segment(aes(x = 1.3, xend = 1.3,
-                   y = sum(degreesC[type=="Emitted"])+0.01,
-                   yend = sum(degreesC)),
+                   y = sum(value[type=="Emitted"])+10,
+                   yend = sum(value)),
                colour = "#303030") +
   geom_segment(aes(x = 1.27, xend = 1.3,
-                   y = sum(degreesC[type=="Emitted"])+0.01,
-                   yend = sum(degreesC[type=="Emitted"])+0.01),
+                   y = sum(value[type=="Emitted"])+10,
+                   yend = sum(value[type=="Emitted"])+10),
                colour = "#303030") +
   geom_segment(aes(x = 1.27, xend = 1.3,
-                   y = sum(degreesC),
-                   yend = sum(degreesC)),
+                   y = sum(value),
+                   yend = sum(value)),
                colour = "#303030") +
-  annotate("text", x = 1.41, 
-           y = ((sum(Reserves$degreesC) - sum(Reserves$degreesC[Reserves$type=="Emitted"]))/2) + 
-             sum(Reserves$degreesC[Reserves$type=="Emitted"]), 
-           label = "Potential Warming:\nDeveloped Reserves",
+  annotate("text", x = 1.5, 
+           y = ((sum(Reserves$value) - sum(Reserves$value[Reserves$type=="Emitted"]))/2) + 
+             sum(Reserves$value[Reserves$type=="Emitted"]), 
+           label = "Developed\nReserves",
+           fontface = "bold", 
            size = 3.5,
            colour = "#303030") +
-  geom_segment(aes(x = 1.3, xend = 1.3,
-                   y = sum(degreesC[type=="Emitted"])-0.01,
-                   yend = 0.01),
+  geom_segment(aes(x = 0.7, xend = 0.7,
+                   y = sum(value[type=="Emitted"])-10,
+                   yend = 10),
                colour = "#303030") +
-  geom_segment(aes(x = 1.27, xend = 1.3,
-                   y = sum(degreesC[type=="Emitted"])-0.01,
-                   yend = sum(degreesC[type=="Emitted"])-0.01),
+  geom_segment(aes(x = 0.73, xend = 0.7,
+                   y = sum(value[type=="Emitted"])-10,
+                   yend = sum(value[type=="Emitted"])-10),
                colour = "#303030") +
-  geom_segment(aes(x = 1.27, xend = 1.3,
-                   y = 0.01,
-                   yend = 0.01),
+  geom_segment(aes(x = 0.73, xend = 0.7,
+                   y = 10,
+                   yend = 10),
                colour = "#303030") +
-  annotate("text", x = 1.37, 
-           y = sum(Reserves$degreesC[Reserves$type=="Emitted"])/2, 
-           label = "Pre-Industrial\nWarming",
+  annotate("text", x = 0.5, 
+           y = sum(Reserves$value[Reserves$type=="Emitted"])/2, 
+           label = "Historic\nEmissions",
+           fontface = "bold",
            size = 3.5,
            colour = "#303030") +
+  geom_segment(aes(x = 1.25, xend = 2.2, 
+                   y = sum(value[type=="Emitted"]),
+                   yend = sum(value[type=="Emitted"])),
+               colour = "#303030",
+               linetype = 2) +
+  geom_segment(aes(x = 2, xend = 2, 
+                   y = sum(value[type=="Emitted"]), 
+                   yend = sum(value)),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.3], 
+                   yend = Mt[warming==0.3]),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.4], 
+                   yend = Mt[warming==0.4]),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.5], 
+                   yend = Mt[warming==0.5]),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.6], 
+                   yend = Mt[warming==0.6]),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.7], 
+                   yend = Mt[warming==0.7]),
+               colour = "#303030") +
+  geom_segment(data = TempScale.forDevelopedReserves,
+               aes(x = 2, xend = 2.03, 
+                   y = Mt[warming==0.8], 
+                   yend = Mt[warming==0.8]),
+               colour = "#303030") +
+  geom_text(data = TempScale.forDevelopedReserves %>% filter(warming<0.9) %>% mutate(x = 2.1),
+             mapping = aes(x = x, y = Mt+20, label = warming),
+             stat = "identity",
+             size = 3.5,
+             colour = "#303030") +
+  annotate("text", x = 2.4, 
+           y = sum(Reserves$value[Reserves$type=="Emitted"])+50, 
+           label = expression(bold("~0.97"*degree*C)),
+           size = 3.5,
+           colour = "#303030") +
+  annotate("text", x = 2.4, 
+           y = sum(Reserves$value[Reserves$type=="Emitted"])-130, 
+           label = "compared to\npre-industrial average",
+           fontface = "bold",
+           size = 3.5,
+           colour = "#303030") +
+  annotate("text", x = 2.1, 
+           y = sum(Reserves$value)+260, 
+           label = "Additional warming",
+           fontface = "bold",
+           size = 3.5,
+           colour = "#303030") +
+  annotate("text", x = 2.1, 
+           y = sum(Reserves$value)+125, 
+           label = expression(bold("(since 2006-2015) - "*degree*C)),
+           size = 3.5,
+           colour = "#303030") + 
   scale_fill_manual(name = "",
                     values = rev(colours.5categories),
                     labels = c("Coal", "Gas", "Oil", 
-                               "2018-2019", "1880-2015"),
+                               "2016-2019", "1880-2015"),
                     guide = guide_legend(label.theme = element_text(size = 9))) +
   scale_x_discrete(name = "",
                    expand = c(0.3, 0)) +
-  scale_y_continuous(name = "",
-                     limits = c(0, 3),
-                     breaks = c(0.5, 1, 1.5, 2, 2.5, 3),
-                     labels = expression(0.5*" "*degree*C, 1*" "*degree*C, 1.5*" "*degree*C, 2*" "*degree*C, 2.5*" "*degree*C, 3*" "*degree*C),
-                     expand = c(0, 0)) +
+  scale_y_continuous(name = "MtCO2e",
+                     expand = c(0, 0), 
+                     breaks = c(2000, 2500, 3000, 3500),
+                     limits = c(0, 3700)) +
   theme(plot.title = element_text(size = 12,
                                   colour = "#303030",
                                   face = "bold"),
@@ -531,9 +610,10 @@ Reserves.TempRise.BarPlot <-
                                           linetype = 3),
         panel.grid.major.x = element_blank(),
         plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
-        axis.title.x = element_text(),
-        axis.title.y = element_blank(),
-        axis.text = element_text(size = 9,
+        axis.title = element_text(size = 10, 
+                                  colour = "#303030",
+                                  face = "bold"),
+        axis.text = element_text(size = 10,
                                  angle = 0,
                                  colour = "#303030",
                                  lineheight = 0.7)) +
@@ -543,8 +623,8 @@ Reserves.TempRise.BarPlot <-
 
 Reserves.TempRise.Arranged <-
   grid.arrange(Reserves.TempRise.BarPlot, 
-               bottom = grid.text(label = "Source: Rystad Energy for developed reserves(oil and gas GtC estimates updated in 2020);\n             2018-2019 GtC emissions from Friedlingstein et al. (2010) Global Carbon Budget 2019. <https://doi.org/10.5194/essd-11-1783-2019>;\n             1880-2015 temperature rise from IPCC (2017) Special Report: Global Warming of 1.5C. <https://www.ipcc.ch/sr15/chapter/chapter-1/>\nNote:     GtC were converted for all reserves data and 2018-2019 GtC emissions using the conversion: 1.75 degrees C = 1000 GtC;\n              Pre-industrial temperature rise is the average modelled trend in temperature between 1880-2015", 
-                                  x = unit(33, "pt"),
+               bottom = grid.text(label = "Source: Rystad Energy for developed reserves (oil and gas MtC estimates updated in 2020);\n             1880-2015 temperature rise from IPCC (2017) Special Report: Global Warming of 1.5C.\n             <https://www.ipcc.ch/sr15/chapter/chapter-1/>\n\nNote:     Additional warming (beyond 2006 - 2015) is calculated using the transient climate response to cumulative emissions\n              of carbon (TCRE). TRC assessed by AR5 to fall likely between 0.8-2.5 degree C/1000 PgC (Collins et al., 2013),\n              considering a normal distribution consistent with AR5 (Stocker et al., 2013).\n              For this figure, we use the 50th percentile (median) TCRE value.\n\n              The IPCC estimates historical warming between the 1850 - 1900 and 2006 - 2015 periods to be 0.87 degree C,\n              with a +/-0.12 degree C standard deviation.\n\n              The secondary y-axis shows anticipated additional warming associated with the consumption of\n              all developed coal, gas, and oil reserves.", 
+                                  x = unit(40, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 9, lineheight = 1, col = "#303030")),
                ncol = 1,
