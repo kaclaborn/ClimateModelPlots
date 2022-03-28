@@ -99,7 +99,7 @@ gutschow.filtered <- gutschow.data %>%
                    !grepl(paste(clean.rows, collapse = "|"), country))
 
 
-# ---- 2.2 Major current emitters (with EU including as single entity) ----
+# ---- 2.2 Major current emitters (with EU included as single entity) ----
 
 CurrentEmitters.EU <- gutschow.filtered %>%
   select(source, scenario, country, entity, unit, `2018`, `2020`) %>%
