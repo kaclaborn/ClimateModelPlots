@@ -272,7 +272,7 @@ for(i in 1:length(annexII.countries$country)){
 #
 
 
-CarbonMajors <- import('data/inputs/CarbonMajors-Top20-2018.csv') %>%
+CarbonMajors <- import('data/inputs/CarbonMajors-Top20-1965-2018.csv') %>%
   filter(Entity!="Global") %>%
   mutate(EntityCountry = paste0(Entity, "\n", "(", Country, ")", sep = ""),
          EntityCountry_ordered = factor(EntityCountry, levels = rev(EntityCountry), ordered = T))
@@ -283,19 +283,20 @@ CarbonMajors <- import('data/inputs/CarbonMajors-Top20-2018.csv') %>%
 CarbonMajorsPlot <-
   ggplot(CarbonMajors %>% arrange(MtCO2e), aes(x = EntityCountry_ordered, y = MtCO2e)) +
   geom_bar(fill = "#23117D", alpha = 0.9, stat = "identity") +
-  geom_text(aes(y = 100, label = paste(PercentGlobal, "%", sep = "")),
+  geom_text(aes(y = 3000, label = paste(PercentGlobal, "%", sep = "")),
             colour = "white", size = 3) +
-  annotate("text", x = 20, y = 330, label = "global share", size = 3, colour = "white") +
+  annotate("text", x = 20, y = 9500, label = "global share", size = 3, colour = "white") +
   scale_x_discrete(name = "") +
   scale_y_continuous(expand = c(0,0),
                      limits = c(0, max(CarbonMajors$MtCO2e)+0.2*max(CarbonMajors$MtCO2e))) +
-  coord_flip() + plot.theme.top30 + labs(title = "Top 20 Carbon Majors by Emissions (2018)")
+  coord_flip() + plot.theme.top30 + labs(title = "Top 20 Carbon Majors by Emissions", 
+                                         subtitle = "Cumulative emissions from 1965-2018")
 
 
 CarbonMajorsArranged <-
   grid.arrange(CarbonMajorsPlot,
                bottom = grid.text(label = "Source: Climate Accountability Initiative <https://climateaccountability.org/carbonmajors_dataset2020.html>", 
-                                  x = unit(140, "pt"),
+                                  x = unit(105, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                padding = unit(5, "pt"), 
@@ -307,19 +308,20 @@ CarbonMajorsArranged <-
 CarbonMajorsPlot_InvestorOwned <-
   ggplot(CarbonMajors %>% filter(InvestorOwned==1) %>% arrange(MtCO2e), aes(x = EntityCountry_ordered, y = MtCO2e)) +
   geom_bar(fill = "#23117D", alpha = 0.9, stat = "identity") +
-  geom_text(aes(y = 100, label = paste(PercentGlobal, "%", sep = "")),
+  geom_text(aes(y = 3000, label = paste(PercentGlobal, "%", sep = "")),
             colour = "white", size = 3) +
-  annotate("text", x = 8, y = 315, label = "global share", size = 3, colour = "white") +
+  annotate("text", x = 8, y = 9000, label = "global share", size = 3, colour = "white") +
   scale_x_discrete(name = "") +
   scale_y_continuous(expand = c(0,0),
                      limits = c(0, max(CarbonMajors$MtCO2e)+0.2*max(CarbonMajors$MtCO2e))) +
-  coord_flip() + plot.theme.top30 + labs(title = "Top Investor-Owned Carbon Majors by Emissions (2018)")
+  coord_flip() + plot.theme.top30 + labs(title = "Top Investor-Owned Carbon Majors by Emissions", 
+                                         subtitle = "Cumulative emissions from 1965-2018")
 
 
 CarbonMajors_InvestorOwned_Arranged <-
   grid.arrange(CarbonMajorsPlot_InvestorOwned,
                bottom = grid.text(label = "Source: Climate Accountability Initiative <https://climateaccountability.org/carbonmajors_dataset2020.html>", 
-                                  x = unit(140, "pt"),
+                                  x = unit(85, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                padding = unit(5, "pt"), 
@@ -331,9 +333,9 @@ CarbonMajors_InvestorOwned_Arranged <-
 CarbonMajorsPlot_Highlight_InvestorOwned <-
   ggplot(CarbonMajors %>% arrange(MtCO2e), aes(x = EntityCountry_ordered, y = MtCO2e)) +
   geom_bar(aes(fill = as.character(InvestorOwned)), alpha = 0.9, stat = "identity") +
-  geom_text(aes(y = 100, label = paste(PercentGlobal, "%", sep = "")),
+  geom_text(aes(y = 3000, label = paste(PercentGlobal, "%", sep = "")),
             colour = "white", size = 3) +
-  annotate("text", x = 20, y = 315, label = "global share", size = 3, colour = "white") +
+  annotate("text", x = 20, y = 9000, label = "global share", size = 3, colour = "white") +
   scale_fill_manual(name = "",
                     labels = c("Not Investor Owned",
                                "Investor Owned"),
@@ -341,13 +343,14 @@ CarbonMajorsPlot_Highlight_InvestorOwned <-
   scale_x_discrete(name = "") +
   scale_y_continuous(expand = c(0,0),
                      limits = c(0, max(CarbonMajors$MtCO2e)+0.2*max(CarbonMajors$MtCO2e))) +
-  coord_flip() + plot.theme.top30 + labs(title = "Top 20 Carbon Majors by Emissions (2018)")
+  coord_flip() + plot.theme.top30 + labs(title = "Top 20 Carbon Majors by Emissions",
+                                         subtitle = "Cumulative emissions from 1965-2018")
 
 
 CarbonMajors_InvestorOwned_Highlight_Arranged <-
   grid.arrange(CarbonMajorsPlot_Highlight_InvestorOwned,
                bottom = grid.text(label = "Source: Climate Accountability Initiative <https://climateaccountability.org/carbonmajors_dataset2020.html>", 
-                                  x = unit(140, "pt"),
+                                  x = unit(105, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                padding = unit(5, "pt"), 
