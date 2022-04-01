@@ -48,6 +48,9 @@ FigureFileName <- paste("figures/outputs/", format(Sys.Date(), format = "%Y%m%d"
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
+
+# ---- 2.1 Plot themes for Top 10, Top 30, sector plots, comparison plots, India-specific plots ----
+
 plot.theme.top10 <-
   theme(plot.title = element_text(size = rel(1),
                                   colour = "#303030",
@@ -210,7 +213,29 @@ plot.theme.India.infra <-
                                  colour = "#303030",
                                  lineheight = 0.7))
 
-  
+plot.theme.India.coldchain <- 
+  theme(plot.title = element_text(size = rel(1),
+                                  colour = "#303030",
+                                  face = "bold", 
+                                  lineheight = 1.2),
+        axis.ticks.y = element_line(colour = "#C0C0C0"),
+        axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill = "white",
+                                        colour = "#909090"),
+        panel.border = element_rect(fill = NA,
+                                    size = 0.5,
+                                    colour = "white"),
+        panel.grid.major = element_blank(),
+        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
+        axis.line.x = element_line(colour = "#C0C0C0"),
+        axis.line.y = element_line(colour = "#C0C0C0"),
+        axis.text = element_text(size = rel(0.9),
+                                 angle = 0,
+                                 colour = "#303030"))
+
+
+# ---- 2.2 Ptol color schemes for fewer categories (4-6) ----
+
 colours.6categories <- c("#332288", "#88CCEE", "#44AA99", "#117733", "#DDCC77", "#CC6677")
 colours.5categories <- c("#332288", "#88CCEE", "#117733", "#DDCC77", "#CC6677")
 colours.4categories <- c("#332288", "#88CCEE", "#117733", "#CC6677")
