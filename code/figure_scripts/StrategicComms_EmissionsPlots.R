@@ -541,32 +541,6 @@ dev.off()
 
 
 
-ggplot(CarbonMajorsIOC.byCountry %>% 
-         filter(country.name=="United States") %>% 
-         pivot_longer(c(`MtCO2e`, `GlobalMtCO2e`)), aes(x = "", y = value, fill = name)) +
-  geom_bar(stat = "identity", width = 1, 
-           colour = "white", 
-           show.legend = F) +
-  coord_polar("y", start = 0) + 
-  geom_text(aes(x = 1.7, y = value[name=="MtCO2e"] / 2, 
-                label = paste(round(unique(PercentGlobal)*100, 2), "%", sep = "")),
-            colour = "#909090", size = 3.5, fontface = "bold", lineheight = 0.9, show.legend = F) +
-  scale_fill_manual(values = c("#C0C0C0", "#332288")) +
-  theme(plot.title = element_text(size = rel(1),
-                                  colour = "#303030",
-                                  face = "bold"),
-        plot.subtitle = element_text(size = rel(0.75),
-                                     colour = "#303030"),
-        axis.ticks = element_blank(),
-        panel.background = element_rect(fill = "white",
-                                        colour = "white"),
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
-        axis.title = element_blank(),
-        axis.text = element_blank())
-
-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
