@@ -2,17 +2,21 @@
 # code: India-specific emissions trajectories & state-level emissions
 # 
 # ---- sections ----
-# 1.  Source Plot Themes, Wrangle Data
-# 2.  India-Specific Emissions Trajectories
-# 3.  India Emissions in Global Context
-# 4.  India State-Level Emissions
-# 5.  Export
+# 1.  SOURCE PLOT THEMES, IMPORT & WRANGLE DATA
+# 2.  INDIA-SPECIFIC EMISSIONS TRAJECTORIES
+# 3.  INDIA EMISSIONS IN GLOBAL CONTEXT
+# 4.  INDIA EMISSIONS BY SECTOR
+# 5.  INDIA EMISSIONS BY CURRENT & FUTURE INFRASTRUCTURE
+# 6.  INDIA COLD CHAIN EMISSIONS
+# 7.  INDIA EMISSIONS & ENERGY BY STATE
+# 8.  EXPORT
+# 9.  ADDITIONAL STATISTICS FOR INDIA
 # 
 # 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 1: SOURCE PLOT THEMES, WRANGLE DATA ----
+# ---- SECTION 1: SOURCE PLOT THEMES, IMPORT & WRANGLE DATA ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -30,6 +34,14 @@ Emissions.bySector.India <-
 
 Emissions.Infrastructure.India <-
   import('data/inputs/India_NewExisting_Infrastructure.csv')
+
+CoolingDemand.bySector.India <-
+  import('data/inputs/AEEE_2018_Demand_Analysis_Cooling_bySector_India.xlsx')
+
+EnergyCapacity.byState.India <-
+  import('data/inputs/Vasudha_India_energy_bystate.xlsx', which = 2) %>%
+  rename(state = "State")
+
 
 # ---- 1.3 Filter & wrangle emissions trajectories data for plots ----
 
@@ -667,7 +679,7 @@ EmissionsPerGDP.FutureGHGs.Arranged <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 4: PIE CHART - INDIA EMISSIONS BY SECTOR ----
+# ---- SECTION 4: INDIA EMISSIONS BY SECTOR ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -718,13 +730,13 @@ India.Emissions.bySector.PieChart.Arranged <-
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 5: INDIA INFRASTRUCTURE ----
+# ---- SECTION 5: INDIA EMISSIONS BY CURRENT & FUTURE INFRASTRUCTURE ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
 
-# ---- 5.1 Create pie chart of India's emissions by sector for 2016 national GHG inventory ----
+# ---- 5.1 Recreate IEA image from India Energy Outlook 2021 - emissions by current and future infrastructure ----
 
 India.PowerInfra.Emissions <- 
   ggplot(Emissions.Infrastructure.India %>% filter(source=="Power"), aes(x = year, y = emissions)) + 
@@ -787,7 +799,7 @@ India.BuildingsInfra.Emissions <-
   labs(title = "Buildings")
 
 
-# -- Create legend plot for infrastructure plots
+# ---- 5.2 Create legend plot for infrastructure plots ----
 
 India.Infrastructure.legend.plot <- 
   ggplot(Emissions.Infrastructure.India %>% filter(source=="Buildings"), aes(x = year, y = emissions)) + 
@@ -809,7 +821,7 @@ India.Infrastructure.legend.plot <-
 India.Infrastructure.legend <- get_legend(India.Infrastructure.legend.plot)
 
 
-# -- Arrange
+# ---- 5.3 Arrange infrastructure plot, labels, legend ----
 
 India.Infra.title <- textGrob("Emissions from Existing and New Infrastructure in India", 
                                  gp = gpar(fontsize = 13, fontface = "bold"), 
@@ -844,11 +856,147 @@ India.Infrastructure.Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 6: INDIA COLD CHAIN EMISSIONS ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+
+# ---- 6.1 Filter cold chain data ----
+
+ColdChainEmissions.India <- 
+  CoolingDemand.bySector.India %>%
+  filter(sector=="Cold Chain" & classification!="Aggregated") %>% # include only cold chain, disaggregated data
+  filter(scenario=="BAU" & metric=="Total emissions") # include only the BAU scenario for 2027 (not the "Improved" scenario) and total emissions as metric
+  # data does include Annual Carbon Emissions by sector (aggregated): industrial process cooling, cold chain, refrigeration, mobile air-conditioning, and space cooling in buildings
+  # -- this would allow for comparison of scale of emissions via cold chain vs. other cooling demand sectors
+  # data includes historical 2017 data, and then 2027 data for both a BAU scenario and an improved scenario
+  # data includes, for the cold storage disaggregated classifications, annual energy consumption and indirect/direct emissions as well as total emissions
+
+
+# ---- 6.2 Recreate Figure 7 from Net Zero Cold Chains for Food report ----
+# --       LINK to report: https://prod-drupal-files.storage.googleapis.com/documents/resource/public/Net_zero_cold_chains_for_food.pdf
+
+ColdChainEmissions.India.plot <- ggplot(ColdChainEmissions.India, aes(x = year, y = value)) +
+  geom_bar(aes(group = classification, fill = classification), 
+           position = "stack", stat = "identity", width = 7) +
+  geom_segment(data = data.frame(x = c(2017, 2017, 2023.5, 2027),
+                                 xend = c(2017, 2020.5, 2027, 2027),
+                                 y = c(4.4, 11, 11, 10),
+                                 yend = c(11, 11, 11, 11)),
+               aes(x = x, xend = xend, y = y, yend = yend),
+               size = 0.5, colour = "#303030") +
+  geom_label(data = data.frame(x = c(2017, 2027), 
+                        y = c(4.5, 10.1),
+                        label = c("4.1 Mt", "9.7 Mt")),
+             aes(x = x, y = y, label = label),
+             size = 3.5, colour = "white", fill = "#303030") +
+  geom_text(aes(x = 2022, y = 11.05, label = "+136%"),
+            size = 3.5, colour = "#303030") +
+  scale_fill_manual(name = "",
+                    values = colours.4categories) +
+  scale_x_continuous(name = "",
+                     breaks = c(2017, 2027)) +
+  scale_y_continuous(name = "",
+                     expand = c(0,0),
+                     limits = c(0, 11.25),
+                     breaks = seq(0, 10, by = 1),
+                     labels = c("0 Mt", "1 Mt", "2 Mt", "3 Mt", "4 Mt", "5 Mt", "6 Mt", "7 Mt", "8 Mt", "9 Mt", "10 Mt")) +
+  plot.theme.India.coldchain + labs(title = "Growth in Indian Cold Chain Emissions by Component (2017-2027)\n")
+
+
+ColdChainEmissions.India.arranged <- 
+  grid.arrange(ColdChainEmissions.India.plot, 
+               bottom = grid.text(label = "Source: Kumar, S., Sachar, S., Kachhawa, S., Goenka, A., Kasamsetty, S., George, G. (2018). Demand Analysis of\n              Cooling by Sector in India in 2027. New Delhi: Alliance for an Energy Efficient Economy.\nNote:     Units in megatonnes (Mt) CO2e", 
+                                  x = unit(45, "pt"),
+                                  just = "left",
+                                  gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
+               ncol = 1,
+               vp = viewport(width = 1, height = 0.95))
+  
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 6: EXPORT ----
+# ---- SECTION 7: INDIA EMISSIONS & ENERGY BY STATE ----
+#
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+
+
+# Below is preliminary code for a state-level map of India energy capacity by state
+
+theme_map <- function (base_size = 12, base_family = "") {
+  theme_gray(base_size = base_size, base_family = base_family) %+replace% 
+    theme(
+      axis.line = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.ticks.length = unit(0.3, "lines"),
+      axis.title = element_blank(),
+      legend.background = element_rect(fill = "white", 
+                                       colour = NA),
+      legend.key = element_rect(colour = "white"),
+      legend.key.width = unit(0.75, "cm"),
+      legend.key.height = unit(0.5, "cm"),
+      legend.position = "right",
+      legend.text = element_text(size = rel(0.9)),
+      panel.background = element_blank(),
+      panel.border = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.background = element_blank(),
+      plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"),
+      plot.title = element_text(size = rel(1.8), 
+                                face = "bold", 
+                                hjust = 0.5),
+      strip.background = element_rect(fill = "grey90", 
+                                      colour = "grey50"),
+      strip.text.x = element_text(size = rel(0.8)),
+      strip.text.y = element_text(size = rel(0.8), 
+                                  angle=-90) 
+    )   
+}
+
+india <- getData('GADM', country="IND", level=1) 
+india.map <- fortify(india) %>%
+  mutate(id = as.integer(id))
+
+map.dat <- data.frame(id = 1:(length(india@data$NAME_1)), 
+                      state = india@data$NAME_1)
+
+india.map.forplot <- inner_join(india.map, map.dat, by = "id")
+
+india.centers <- 
+  data.frame(gCentroid(india, byid = TRUE),
+             state = map.dat$state) %>%
+  mutate(state = ifelse(state=="NCT of Delhi", "Delhi", state)) %>%
+  left_join(EnergyCapacity.byState.India, by = "state")
+
+
+India.statelevel.map <- ggplot() + 
+  geom_polygon(data = india.map.forplot,
+           aes(x = long, y = lat, group = group),
+           color = "#ffffff", fill = "#bbbbbb", size = 0.25) +
+  geom_text(data = india.centers, aes(label = state, x = x, y = y), size = 2) +
+  geom_scatterpie(data = india.centers, aes(x = x, y = y - 0.5), cols = c("CoalCapacity", "OilGasCapacity",
+                                                                    "NuclearCapacity", "HydroCapacity",
+                                                                    "WindCapacity", "SolarCapacity",
+                                                                    "BioPowerCapacity", "SmallHydroCapacity")) +
+  scale_fill_ptol(name = "",
+                  labels = c("Coal", "Oil & Gas", "Nuclear", "Hydro", "Wind", "Solar", "Bio-Power", "Small Hydro")) +
+  coord_map() +
+  labs(x = "", y = "", title = "India State") +
+  theme_map()
+  
+
+
+# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
+# ---- SECTION 8: EXPORT ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -930,19 +1078,26 @@ grid.newpage()
 grid.draw(India.Infrastructure.Arranged)
 dev.off()
 
-print(India.PowerInfra.Emissions)
+
+png(paste(FigureFileName, "/India.ColdChainEmissions.png", sep = ""),
+    units = "in", height = 6, width = 8, res = 400)
+grid.newpage()
+grid.draw(ColdChainEmissions.India.arranged)
+dev.off()
+
+
 
 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# ---- SECTION 7: ADDITIONAL STATISTICS FOR INDIA ----
+# ---- SECTION 9: ADDITIONAL STATISTICS FOR INDIA ----
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 
 
-# ---- 7.1 India percent share of emissions in 2030 ----
+# ---- 9.1 India percent share of emissions in 2030 ----
 #          Using SSP2 reference scenario
 
 FutureGHGs.India.v.world <- gutschow.data %>%
@@ -966,7 +1121,7 @@ AnnualEmissions.India.v.world <-
   filter(country=="IND")
 
 
-# ---- 7.2 Cumulative emissions from 2018 - 2050, and India percent share of cumulative emissions ----
+# ---- 9.2 Cumulative emissions from 2018 - 2050, and India percent share of cumulative emissions ----
 #          Using SSP2 reference scenario
 
 CumulativeEmissions.India.v.world <- 

@@ -1,13 +1,15 @@
 # 
 # code: Import Emissions Trajectories Data
 # 
+# 
+# 
 # ---- sections ----
-# 1.  Import data
-# 2.  Examine Top20 current emitters
-# 3.  Extract Future Emissions trajectories for Top 10 current emitters
-# 4.  Export data
-
-
+# 1.  IMPORT DATA
+# 2.  FILTER GUTSCHOW DATA TO CURRENT EMISSIONS
+# 3.  FILTER GUTSCHOW DATA FOR FUTURE TRAJECTORIES
+# 4.  FILTER GUTSCHOW DATA FOR ALL SSP SCENARIOS
+# 5.  WRANGLE CAIT & GCAM DATA
+# 
 # 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
@@ -20,7 +22,7 @@
 # ---- 1.1 Import libraries ----
 
 pacman::p_load(rio, grid, gridtext, gridExtra, extrafont, ggthemes, ggplot2, 
-               treemapify, tidyr, stringr, dplyr)
+               treemapify, scatterpie, mapproj, raster, rgdal, rgeos, tidyr, stringr, dplyr)
 
 
 # ---- 1.2 Import data ----
