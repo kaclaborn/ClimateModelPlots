@@ -37,7 +37,8 @@ annexII.countries <- # all Annex II countries, except for Iceland and New Zealan
   mutate(country.name = factor(country.name, 
                                levels = c("United States", "Canada", "EU-27", "United Kingdom",
                                           "Japan", "Australia"),
-                               ordered = TRUE))
+                               ordered = TRUE),
+         country.label = c("United\nStates", "Canada", "EU-27", "United\nKingdom", "Japan", "Australia"))
 
 
 source.label.gutschow.SSP1SSP2.pareddown <- "Source:         Gütschow et al (2020). <https://doi.org/10.5281/zenodo.3638137>\n\nModel Note:  The highlighted line represents the marker model for each SSP; uncertainty bands in the Annual Emissions plot (left)\n                      represent the minimum and maximum values across all five integrated assessment models.\n\n                      The SSP1 reference scenario illustrates modelled emissions trajectories in a 'sustainable development' paradigm,,\n                      with less resource intensive lifestyles, global cooperation, and high economic growth. It does not include any climate policies beyond\n                       those in place today. More details on the SSP1 marker model can be found at <https://doi.org/10.1016/j.gloenvcha.2016.05.008>\n\n                      The SSP2 reference scenario illustrates modelled emissions trajectories if historic energy supply/demand and land use patterns\n                      persist into the future. It does not include any climate policies beyond those in place today.\n                      More details on the SSP2 marker model can be found at <https://doi.org/10.1016/j.gloenvcha.2016.06.004>\n\nUnits:            Gigatonnes (Gt) CO2e"
@@ -278,6 +279,55 @@ CarbonMajors <- import('data/inputs/CarbonMajors-Top20-1965-2018.csv') %>%
          EntityCountry_ordered = factor(EntityCountry, levels = rev(EntityCountry), ordered = T))
 
 
+CarbonMajorsIOC <- import('data/inputs/CarbonMajors_IOC_cumulative_1850-2018.csv')
+
+CarbonMajorsIOC.byCountry <- # NOTE: Norway is not an EU member state, so is removed from all analyses for these figures
+  CarbonMajorsIOC %>%
+  mutate(Country = ifelse(Country%in%c("Austria", "France", "Germany", "Netherlands", "Switzerland", "Spain", "Italy"), "EU-27", 
+                          ifelse(Country=="USA", "United States",
+                                 ifelse(Country=="UK", "United Kingdom",
+                                        Country)))) %>%
+  filter(Country%in%annexII.countries$country.name) %>%
+  group_by(Country) %>%
+  summarise(MtCO2e = sum(MtCO2e),
+            nIOC = length(EntityIOC)) %>%
+  ungroup() %>%
+  mutate(GlobalMtCO2e = CarbonMajorsIOC$MtCO2e[CarbonMajorsIOC$EntityIOC=="CDIAC"],
+         PercentGlobal = MtCO2e / GlobalMtCO2e) %>%
+  rename("country.name" = "Country")
+
+Global.CumulativeEmissions <- 
+  GlobalGHG %>%
+  filter(year%in%c(1850:2017)) %>%
+  summarise(totalCO2e = sum(totalGHG)/1000)
+
+AnnexII.CumulativeEmissions <-
+  FutureGHG.EU %>% 
+  left_join(annexII.countries, by = "country") %>%
+  filter(!is.na(country.name) & year%in%c(1850:2018)) %>%
+  group_by(country.name) %>%
+  summarise(MtCO2e = sum(value)/1000) %>%
+  ungroup() %>%
+  mutate(GlobalMtCO2e = Global_CumulativeEmissions$totalCO2e,
+         PercentGlobal = MtCO2e / GlobalMtCO2e)
+
+
+# -- CHECK global emissions values from Gutschow with those from Climate Accountability
+# NOTE: Climate Accountability data only uses CO2 and CH4, while we use all Kyoto AR4 gases in Gutschow.
+# 
+# GlobalEmissions.check <- gutschow.filtered %>%
+#   filter((entity=="CO2" | entity=="CH4") & country=="EARTH") %>%
+#   tidyr::pivot_longer(c(`1850`:`2100`), names_to = "year", values_to = "value") %>%
+#   mutate(marker = ifelse(scenario==marker.scenario, 1, 0),
+#          year = as.numeric(year),
+#          CO2e = ifelse(entity=="CH4", value * 25, value)) %>%
+#   filter(year%in%c(1850:2017) & marker==1) %>%
+#   summarise(totalCO2e = sum(CO2e)/1000,
+#             CH4 = sum(value[entity=="CH4"])/1000,
+#             CO2 = sum(CO2e[entity=="CO2"]/1000),
+#             unit = "million Mt")
+
+
 # ---- 4.1 Top 20 Carbon Majors Plot ----
 
 CarbonMajorsPlot <-
@@ -305,7 +355,7 @@ CarbonMajorsArranged <-
 
 # ---- 4.2 Only Investor-owned from the Top 20 ----
 
-CarbonMajorsPlot_InvestorOwned <-
+CarbonMajorsPlot.InvestorOwned <-
   ggplot(CarbonMajors %>% filter(InvestorOwned==1) %>% arrange(MtCO2e), aes(x = EntityCountry_ordered, y = MtCO2e)) +
   geom_bar(fill = "#23117D", alpha = 0.9, stat = "identity") +
   geom_text(aes(y = 3000, label = paste(PercentGlobal, "%", sep = "")),
@@ -318,8 +368,8 @@ CarbonMajorsPlot_InvestorOwned <-
                                          subtitle = "Cumulative emissions from 1965-2018")
 
 
-CarbonMajors_InvestorOwned_Arranged <-
-  grid.arrange(CarbonMajorsPlot_InvestorOwned,
+CarbonMajors.InvestorOwned.Arranged <-
+  grid.arrange(CarbonMajorsPlot.InvestorOwned,
                bottom = grid.text(label = "Source: Climate Accountability Initiative <https://climateaccountability.org/carbonmajors_dataset2020.html>", 
                                   x = unit(85, "pt"),
                                   just = "left",
@@ -328,9 +378,9 @@ CarbonMajors_InvestorOwned_Arranged <-
                vp = viewport(width = 1, height = 0.95))
 
 
-# ---- 4.2 Include full Top 20 with investor-owned separate color ----
+# ---- 4.3 Include full Top 20 with investor-owned separate color ----
 
-CarbonMajorsPlot_Highlight_InvestorOwned <-
+CarbonMajorsPlot.Highlight.InvestorOwned <-
   ggplot(CarbonMajors %>% arrange(MtCO2e), aes(x = EntityCountry_ordered, y = MtCO2e)) +
   geom_bar(aes(fill = as.character(InvestorOwned)), alpha = 0.9, stat = "identity") +
   geom_text(aes(y = 3000, label = paste(PercentGlobal, "%", sep = "")),
@@ -347,14 +397,174 @@ CarbonMajorsPlot_Highlight_InvestorOwned <-
                                          subtitle = "Cumulative emissions from 1965-2018")
 
 
-CarbonMajors_InvestorOwned_Highlight_Arranged <-
-  grid.arrange(CarbonMajorsPlot_Highlight_InvestorOwned,
+CarbonMajors.InvestorOwned.Highlight.Arranged <-
+  grid.arrange(CarbonMajorsPlot.Highlight.InvestorOwned,
                bottom = grid.text(label = "Source: Climate Accountability Initiative <https://climateaccountability.org/carbonmajors_dataset2020.html>", 
                                   x = unit(105, "pt"),
                                   just = "left",
                                   gp = gpar(fontsize = 8, lineheight = 1, col = "#303030")),
                padding = unit(5, "pt"), 
                vp = viewport(width = 1, height = 0.95))
+
+
+# ---- 4.4 Pie chart of carbon majors global percent share (compared to global emissions) ----
+
+
+
+
+for(i in 1:length(annexII.countries$country)) {
+  a <- annexII.countries$country.name[i]
+  b <- annexII.countries$country[i]
+  c <- annexII.countries$country.label[i]
+  # colour <- colours.6categories[i]
+  
+  assign(paste("CountryEmissionsPie", b, sep = "."),
+         ggplot(AnnexII.CumulativeEmissions %>% 
+                  filter(country.name==a) %>% 
+                  pivot_longer(c(`MtCO2e`, `GlobalMtCO2e`)), aes(x = "", y = value, fill = name)) +
+           geom_bar(stat = "identity", width = 1, 
+                    colour = "white", 
+                    show.legend = F) +
+           coord_polar("y", start = 0) + 
+           geom_text(aes(x = 2, y = ifelse(unique(PercentGlobal*100>=12), 200000,
+                                             ifelse(unique(PercentGlobal)*100>=10 & unique(PercentGlobal)*100<12, 170000, 
+                                                    170000)), 
+                         label = paste(round(unique(PercentGlobal)*100, 2), "%", sep = "")),
+                     colour = "#909090", size = 3.5, fontface = "bold", lineheight = 0.9, show.legend = F) +
+           scale_fill_manual(values = c("#C0C0C0", "#54ADAD")) +
+           theme(plot.title = element_text(size = rel(1),
+                                           colour = "#303030",
+                                           face = "bold"),
+                 plot.subtitle = element_text(size = rel(0.75),
+                                              colour = "#303030"),
+                 axis.ticks = element_blank(),
+                 panel.background = element_rect(fill = "white",
+                                                 colour = "white"),
+                 panel.border = element_blank(),
+                 panel.grid.major = element_blank(),
+                 plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+                 axis.title = element_blank(),
+                 axis.text = element_blank()))
+  
+  assign(paste("IOCEmissionsPie", b, sep = "."),
+         ggplot(CarbonMajorsIOC.byCountry %>% 
+                  filter(country.name==a) %>% 
+                  pivot_longer(c(`MtCO2e`, `GlobalMtCO2e`)), aes(x = "", y = value, fill = name)) +
+           geom_bar(stat = "identity", width = 1, 
+                    colour = "white", 
+                    show.legend = F) +
+           coord_polar("y", start = 0) + 
+           geom_text(aes(x = 2, y = ifelse(unique(PercentGlobal*100>=12), 200000,
+                                             ifelse(unique(PercentGlobal)*100>=10 & unique(PercentGlobal)*100<12, 170000, 
+                                                    170000)), 
+                         label = paste(round(unique(PercentGlobal)*100, 2), "%", sep = "")),
+                     colour = "#909090", size = 3.5, fontface = "bold", lineheight = 0.9, show.legend = F) +
+           scale_fill_manual(values = c("#C0C0C0", "#54ADAD")) +
+           theme(plot.title = element_text(size = rel(1),
+                                           colour = "#303030",
+                                           face = "bold"),
+                 plot.subtitle = element_text(size = rel(0.75),
+                                              colour = "#303030"),
+                 axis.ticks = element_blank(),
+                 panel.background = element_rect(fill = "white",
+                                                 colour = "white"),
+                 panel.border = element_blank(),
+                 panel.grid.major = element_blank(),
+                 plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+                 axis.title = element_blank(),
+                 axis.text = element_blank()))
+  
+
+  
+  assign(paste("PiesArranged", b, sep = "."),
+         grid.arrange(grid.text(label = c, 
+                                gp = gpar(fontsize = 11, fontface = "bold", lineheight = 1, col = "#303030")),
+                      arrangeGrob(get(paste("CountryEmissionsPie", b, sep = ".")), 
+                                   get(paste("IOCEmissionsPie", b, sep = ".")),
+                                   nrow = 1),
+                      nrow = 1,
+                      padding = unit(5, "pt"), 
+                      widths = unit(c(0.9, 2), "null"),
+                      vp = viewport(width = 1, height = 0.95)))
+  
+}
+
+
+PiesArranged <- grid.arrange(arrangeGrob(textGrob(label = "Global Share of Emissions, Annex II Countries (1850-2018)\n",
+                                                  gp = gpar(fontsize = 13, fontface = "bold", col = "#303030"),
+                                                  just = "left", x = 0),
+                                         textGrob(label = "In this visual, we compare a country’s share of total global emissions\nfrom 1850-2018 and the share of global emissions of fossil fuel corporations\nthat are based in that same country. The emissions reflected in the\nlatter were produced by a corporation globally.\n",
+                                                  gp = gpar(fontsize = 10, col = "#303030", lineheight = 0.9),
+                                                  just = "left", x = 0),
+                                         nrow = 2,
+                                         padding = unit(10, "pt")),
+                             arrangeGrob(textGrob(label = "\n"),
+                                         textGrob(label = "\nCountry Total\n",
+                                                  gp = gpar(fontsize = 11, fontface = "bold", col = "#303030")), 
+                                         textGrob(label = "\nInvestor-Owned\nFossil Fuel\nCorporations\n",
+                                                  gp = gpar(fontsize = 11, fontface = "bold", col = "#303030", lineheight = 0.9)),
+                                         nrow = 1,
+                                         widths = unit(c(1.3, 2, 1.5), "null")) ,
+                             arrangeGrob(PiesArranged.USA,
+                                         PiesArranged.CAN,
+                                         PiesArranged.EU27,
+                                         PiesArranged.GBR,
+                                         PiesArranged.JPN,
+                                         PiesArranged.AUS,
+                                         ncol = 1),
+                             # arrangeGrob(textGrob(label = ""),
+                             #             textGrob(label = "Global Share by Country\n",
+                             #                      gp = gpar(fontsize = 9, col = "#303030", lineheight = 0.9)),
+                             #             textGrob(label = "Global Share of by Fossil Fuel\nCorporations Based in Country",
+                             #                      gp = gpar(fontsize = 9, col = "#303030", lineheight = 0.9)),
+                             #             nrow = 1),
+                             arrangeGrob(textGrob(label = "\nSource: Country Total (global share of emissions) derived from Gütschow et al. (2020).\n             <https://doi.org/10.5281/zenodo.3638137>\n",
+                                                  gp = gpar(fontsize = 9, col = "#303030", lineheight = 0.9),
+                                                  just = "left", x = 0),
+                                         textGrob(label = "             Investor-Owned Fossil Fuel Corporations (global share of emissions) derived\n             from Climate Accountability Initiative.\n             <https://climateaccountability.org/carbonmajors_dataset2020.html>\n",
+                                                  gp = gpar(fontsize = 9, col = "#303030", lineheight = 0.9),
+                                                  just = "left", x = 0),
+                                         textGrob(label = "Note:    Country Total includes all Kyoto AR4 gases (in CO2e).\n             Investor-Owned Fossil Fuel Corporations includes CO2 and CH4 (in CO2e).",
+                                                  gp = gpar(fontsize = 9, col = "#303030", lineheight = 0.9),
+                                                  just = "left", x = 0),
+                                         ncol = 1),
+                             ncol = 1,
+                             heights = unit(c(1.3, 1, 10, 2.5), "null"),
+                             padding = unit(0, "pt"))
+
+
+png(paste(FigureFileName, "/PiesArranged.png", sep = ""),
+    units = "in", height = 10, width = 5, res = 400)
+grid.newpage()
+grid.draw(PiesArranged)
+dev.off()
+
+
+
+ggplot(CarbonMajorsIOC.byCountry %>% 
+         filter(country.name=="United States") %>% 
+         pivot_longer(c(`MtCO2e`, `GlobalMtCO2e`)), aes(x = "", y = value, fill = name)) +
+  geom_bar(stat = "identity", width = 1, 
+           colour = "white", 
+           show.legend = F) +
+  coord_polar("y", start = 0) + 
+  geom_text(aes(x = 1.7, y = value[name=="MtCO2e"] / 2, 
+                label = paste(round(unique(PercentGlobal)*100, 2), "%", sep = "")),
+            colour = "#909090", size = 3.5, fontface = "bold", lineheight = 0.9, show.legend = F) +
+  scale_fill_manual(values = c("#C0C0C0", "#332288")) +
+  theme(plot.title = element_text(size = rel(1),
+                                  colour = "#303030",
+                                  face = "bold"),
+        plot.subtitle = element_text(size = rel(0.75),
+                                     colour = "#303030"),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white"),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        plot.margin = margin(t = 5, r = 20, b = 5, l = 5, unit = "pt"),
+        axis.title = element_blank(),
+        axis.text = element_blank())
 
 
 # 
@@ -443,11 +653,11 @@ dev.off()
 png(paste(FigureFileName, "/CarbonMajors.InvestorOwned.png", sep = ""),
     units = "in", height = 6, width = 8, res = 400)
 grid.newpage()
-grid.draw(CarbonMajors_InvestorOwned_Arranged)
+grid.draw(CarbonMajors.InvestorOwned.Arranged)
 dev.off()
 
 png(paste(FigureFileName, "/CarbonMajors.InvestorOwned.Highlighted.png", sep = ""),
     units = "in", height = 6, width = 10, res = 400)
 grid.newpage()
-grid.draw(CarbonMajors_InvestorOwned_Highlight_Arranged)
+grid.draw(CarbonMajors.InvestorOwned.Highlight.Arranged)
 dev.off()
